@@ -4,10 +4,13 @@
 #
 
 block_cipher = None
+from pathlib import Path
+
+SPEC_DIR = Path(__file__).resolve().parent
 
 a = Analysis(
-    ['station_picker.py'],
-    pathex=['.'],
+    [str(SPEC_DIR / 'station_picker.py')],
+    pathex=[str(SPEC_DIR)],
     binaries=[],
     datas=[],
     hiddenimports=[
@@ -92,5 +95,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="search.png",
+    icon=str(SPEC_DIR / "search.png"),
 )

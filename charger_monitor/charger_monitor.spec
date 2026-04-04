@@ -5,10 +5,13 @@
 # station.json 不打包 —— 请将其放在可执行文件的同目录下让用户自行配置
 
 block_cipher = None
+from pathlib import Path
+
+SPEC_DIR = Path(__file__).resolve().parent
 
 a = Analysis(
-    ['main.py'],
-    pathex=['.'],
+    [str(SPEC_DIR / 'main.py')],
+    pathex=[str(SPEC_DIR)],
     binaries=[],
     datas=[],
     hiddenimports=[
@@ -93,5 +96,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="icon.png",
+    icon=str(SPEC_DIR / "icon.png"),
 )
