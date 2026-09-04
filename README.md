@@ -1,70 +1,35 @@
-# UESTC 充电桩监控工具（Charge Tools）
+# 电子科技大学充电桩位置查询
 
-面向电子科技大学清水河校区的**充电桩状态查询与历史记录**工具集。核心能力：
+查学校（清水河校区）充电桩的**空闲情况、位置、历史**。数据来自「闪开来电」，每 60 秒自动更新。
 
-- **手机/电脑浏览器访问**：页面上「列表」快速筛空闲、「地图」看每个站的位置和空闲情况、「历史」查近 3 天充电会话与功率曲线。
-- **站点点位标定**：利用充电接口自带的地址 + 经纬度，把全校站点画到真实地图上（高德中文底图），无需人工手绘。
-- **桌面悬浮监控**（可选）：PyQt5 桌面悬浮窗，实时显示各站空闲插座数。
+## 一、给普通用户：怎么用（手机 / 电脑浏览器）
 
-数据来源为充电桩服务接口（`wemp.issks.com`），本工具把全部站点按分钟采样，写入本地 SQLite 保留 3 天。
+打开网址（部署后，例如 `http://…:8765/`）：
 
-## 目录结构
+- **列表**：顶部一排数字是全校『空闲 / 充电中 / 故障』的总数；下面可点 **［全部 / 空闲 / 充电中］** 快速筛选。点一个站点 → 看该站每个插座（空闲 / 充电中 / 故障）→ 再点插座看近 3 天充电记录与功率曲线。
+- **地图**：看每个站的位置。🟢 绿 = 有空闲（数字 = 该位置空闲插座数），🔴 红 = 无空闲，⚪ 灰 = 无数据。点标记可查看该位置的几个站、并直接进入插座。
+- 数据每 60 秒自动刷新；右上「自动刷新」可开关，点「刷新」立即更新。
 
-| 目录 | 说明 |
-|---|---|
-| [`charge_history/`](charge_history/) | **主程序**：采样后端 + SQLite 历史库 + HTTP 接口 + 手机网页前端 |
-| [`charger_monitor/`](charger_monitor/) | 桌面悬浮监控（可选，需 PyQt5） |
-| [`station_picker/`](station_picker/) | 附近站点查询/导出 `station.json`（可选，需 PyQt5） |
-| [`deploy/`](deploy/) | 云服务器一键部署（systemd + venv + deploy.sh） |
-| [`GIT_WORKFLOW.md`](GIT_WORKFLOW.md) | GitHub 接入与日常修改流程 |
+## 二、怎么部署
 
-根目录 `requirements.txt`：`PyQt5`（仅桌面工具需要）+ `requests`（后端必需）。
-
-## 快速开始（推荐：网页版）
-
-后端只依赖 `requests`，无需 PyQt5。
-
+### 2.1 本地跑一下（需要 Python 3 + `requests`）
 ```bash
-# 安装依赖（最好用 venv）
-pip install -r requirements.txt        # 或只装 requests：pip install requests
-
-# 1) 生成站点点位坐标表（首次/加站后执行一次）
+pip install requests
+# 首次 / 加站后生成站点点位
 python charge_history/export_locations.py
-
-# 2) 启动后端（默认监听 127.0.0.1:8765；要局域网/手机访问用 --host 0.0.0.0）
+# 启动（--host 0.0.0.0 供局域网内手机访问）
 python charge_history/charge_history_backend.py --host 0.0.0.0
 ```
+- 本机：`http://127.0.0.1:8765/`；同 Wi-Fi 的手机：`http://<电脑IP>:8765/`
+- 也可双击 `start_server.command`（macOS）或 `start_server.bat`（Windows）一键启动。
 
-- 本机打开：<http://127.0.0.1:8765/>
-- 同一 Wi-Fi 的手机打开：`http://<电脑IP>:8765/`
+### 2.2 部署到云服务器（供大家用，推荐）
+- 一台**国内**云服务器（腾讯云 / 阿里云，Ubuntu 系统），放行端口 **8765**。
+- 把代码放到服务器后执行：`sudo bash deploy/deploy.sh`（自动装依赖、建 systemd 服务、开机自启、崩溃自动重启）。
+- 手机打开 `http://<服务器IP>:8765/`。
 
-页面上：
-- **列表**：顶栏 [全部 / 空闲 / 充电中] 一键筛选；点站点 → 插座（空闲/充电中/故障）→ 会话历史 → 功率曲线图。
-- **地图**：全部站点点位（同址自动合并为一个标记，弹窗列出该点所有站点），绿=有空闲，红=全副，点「查看插座」直接进入该站。
-- 支持 30 秒自动刷新开关。
+> 详细步骤见 `deploy/README.md`。
 
-> 也可双击根目录的 `start_server.command`（macOS）或 `start_server.bat`（Windows）一键启动并自动打开浏览器。
-
-## 配置
-
-- **站点清单**：`charge_history/all.json`（共用站点），监控主程序读 `charger_monitor/station.json`。都是 `站点名 -> station_id` 结构。
-- **管理口令 & 限流**：`/etc/charger-monitor.env`（云服务器用）设置 `CHARGER_AUTH_USER`/`CHARGER_AUTH_PASS` 保护 `/api/admin/collect`，`CHARGER_RATE_LIMIT` 做按 IP 限流。**查询接口默认全开放、无需登录**。
-
-## 云部署（腾讯云/阿里云）
-
-后端很轻（只需 `requests`），`deploy.sh` 一键装环境、建 systemd 服务（开机自启 + 崩溃重启）。详见 [`deploy/README.md`](deploy/README.md)。
-
-```bash
-# 把仓库放到服务器后：
-sudo bash deploy/deploy.sh
-```
-
-## 版本管理 & 日常修改流程
-
-已接入 GitHub（`ganhaidong/UESTC_Charger_Monitor`，公开）。改代码：`git add -A && git commit -m "..." && git push`；服务器：`git pull && sudo bash deploy/deploy.sh`。详见 [`GIT_WORKFLOW.md`](GIT_WORKFLOW.md)。
-
-## 安全提醒
-
-- 仓库为公开仓库，**切勿提交任何真实令牌 / 密码 / 密钥**（一律用占位符）。
-- 管理口令 `/etc/charger-monitor.env` 只在服务器上，不进仓库。
-- 若要对公网更安全，建议后续加 **HTTPS**（Caddy 自动证书）。
+## 三、致谢
+- 数据来自「闪开来电」(issks) 充电平台接口。
+- 原始工具由 [WGooold](https://github.com/WGooold/UESTC_Charger_Monitor) 开发，本仓库在其基础上扩展了**网页前端、地图定位、坐标标定与云端部署**。
