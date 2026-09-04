@@ -51,9 +51,9 @@ EOF
   sudo chmod 600 /etc/charger-monitor.env
   echo "==> 已生成配置模板 /etc/charger-monitor.env（填好账号密码后重启服务生效）"
 fi
-# 统一目录755、文件644，避免源文件权限(600)让运行用户读不了
-sudo find "$APP_DIR" -type d -exec chmod 755 {} \;
-sudo find "$APP_DIR" -type f -exec chmod 644 {} \;
+# 让代码/网页可读、目录可进入；但绝不能动 .venv 里 python/pip 的可执行权限！
+sudo find "$APP_DIR/charge_history" -type d -exec chmod 755 {} \;
+sudo find "$APP_DIR/charge_history" -type f -exec chmod 644 {} \;
 sudo systemctl daemon-reload
 sudo systemctl enable "$SERVICE"
 sudo systemctl restart "$SERVICE"
