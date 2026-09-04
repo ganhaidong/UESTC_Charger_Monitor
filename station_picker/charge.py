@@ -22,7 +22,7 @@ HEADERS = {
     "brands": "2407FRK8EC",
     "user-agent": "Mozilla/5.0 (Linux; Android 16; 2407FRK8EC Build/BP2A.250605.031.A3; wv) ...",
     "content-type": "application/json;charset=utf-8",
-    # "token": "issks_20e1f0ee4d8e087a35b57c5e0bd785c3",  # ← 替换成有效 token
+    # "token": "YOUR_TOKEN_HERE",  # ← 若需鉴权请填有效 token；切勿把真实令牌提交到公开仓库
     "accept": "*/*",
     "origin": "https://api.issks.com",
     "x-requested-with": "com.tencent.mm",
