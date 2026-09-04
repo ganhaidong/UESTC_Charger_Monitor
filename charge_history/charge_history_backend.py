@@ -263,6 +263,31 @@ def looks_like_new_session(
     return False
 
 
+class TTLCache:
+    """线程安全的短时缓存，避免大量相同读请求瞬间直接打 SQLite。"""
+
+    def __init__(self) -> None:
+        self._data: Dict[str, tuple] = {}
+        self._lock = threading.Lock()
+
+    def get(self, key: str):
+        with self._lock:
+            item = self._data.get(key)
+            if item is None:
+                return None
+            if item[0] > time.time():
+                return item[1]
+            self._data.pop(key, None)
+            return None
+
+    def set(self, key: str, value: Any, ttl: float) -> None:
+        with self._lock:
+            self._data[key] = (time.time() + ttl, value)
+
+
+_API_CACHE = TTLCache()
+
+
 class HistoryDatabase:
     def __init__(self, db_path: Path):
         self.path = db_path
@@ -385,14 +410,24 @@ class HistoryDatabase:
             ).fetchone()
         return row["value"] if row else default
 
+    def _open_read_conn(self) -> sqlite3.Connection:
+        """每个请求一个独立的只读连接，读并发不互斥；写仍走单写连接+锁(WAL 支持读写并发)。"""
+        conn = sqlite3.connect(str(self.path), check_same_thread=False, timeout=5)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout=5000")
+        return conn
+
     def totals(self) -> Dict[str, int]:
-        with self._lock:
-            station_count = self._conn.execute("SELECT COUNT(*) AS n FROM station_registry").fetchone()["n"]
-            outlet_count = self._conn.execute("SELECT COUNT(*) AS n FROM outlet_registry").fetchone()["n"]
-            session_count = self._conn.execute("SELECT COUNT(*) AS n FROM charge_sessions").fetchone()["n"]
-            active_sessions = self._conn.execute(
+        conn = self._open_read_conn()
+        try:
+            station_count = conn.execute("SELECT COUNT(*) AS n FROM station_registry").fetchone()["n"]
+            outlet_count = conn.execute("SELECT COUNT(*) AS n FROM outlet_registry").fetchone()["n"]
+            session_count = conn.execute("SELECT COUNT(*) AS n FROM charge_sessions").fetchone()["n"]
+            active_sessions = conn.execute(
                 "SELECT COUNT(*) AS n FROM charge_sessions WHERE end_time IS NULL"
             ).fetchone()["n"]
+        finally:
+            conn.close()
         return {
             "station_count": station_count,
             "outlet_count": outlet_count,
@@ -652,8 +687,9 @@ class HistoryDatabase:
 
     def list_stations(self, search: str = "") -> List[Dict[str, Any]]:
         like_kw = f"%{search.strip()}%"
-        with self._lock:
-            rows = self._conn.execute(
+        conn = self._open_read_conn()
+        try:
+            rows = conn.execute(
                 """
                 SELECT
                     s.station_id,
@@ -674,12 +710,15 @@ class HistoryDatabase:
                 """,
                 (like_kw,),
             ).fetchall()
+        finally:
+            conn.close()
         return [dict(row) for row in rows]
 
     def list_outlets(self, station_id: int, search: str = "") -> List[Dict[str, Any]]:
         like_kw = f"%{search.strip()}%"
-        with self._lock:
-            rows = self._conn.execute(
+        conn = self._open_read_conn()
+        try:
+            rows = conn.execute(
                 """
                 SELECT
                     o.station_id,
@@ -706,6 +745,8 @@ class HistoryDatabase:
                 """,
                 (station_id, like_kw, like_kw, like_kw),
             ).fetchall()
+        finally:
+            conn.close()
         items = []
         for row in rows:
             item = dict(row)
@@ -716,8 +757,9 @@ class HistoryDatabase:
 
     def list_sessions(self, station_id: int, outlet_no: str, days: int = 3) -> List[Dict[str, Any]]:
         cutoff = iso_utc(utc_now() - dt.timedelta(days=max(1, days)))
-        with self._lock:
-            rows = self._conn.execute(
+        conn = self._open_read_conn()
+        try:
+            rows = conn.execute(
                 """
                 SELECT
                     id,
@@ -752,6 +794,8 @@ class HistoryDatabase:
                 """,
                 (station_id, outlet_no, cutoff, cutoff),
             ).fetchall()
+        finally:
+            conn.close()
 
         items = []
         for row in rows:
@@ -763,8 +807,9 @@ class HistoryDatabase:
         return items
 
     def get_session_detail(self, session_id: int) -> Optional[Dict[str, Any]]:
-        with self._lock:
-            row = self._conn.execute(
+        conn = self._open_read_conn()
+        try:
+            row = conn.execute(
                 """
                 SELECT
                     id,
@@ -791,7 +836,15 @@ class HistoryDatabase:
             ).fetchone()
             if row is None:
                 return None
-            points = self._load_session_points_locked(session_id)
+            points = [
+                dict(r)
+                for r in conn.execute(
+                    "SELECT sample_time, used_min, power_w, fee FROM session_samples WHERE session_id = ? ORDER BY sample_time ASC",
+                    (session_id,),
+                ).fetchall()
+            ]
+        finally:
+            conn.close()
 
         item = dict(row)
         item["abnormal"] = bool(item["abnormal"])
@@ -1032,15 +1085,16 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
-        if not self._check_rate_limit():
-            return
         try:
             parsed = urlparse(self.path)
             query = parse_qs(parsed.query)
             path = parsed.path.rstrip("/") or "/"
 
-            # 管理接口需要口令；未配置口令则直接关闭，避免公网被随意触发。
+            # 管理接口：先按 IP 限流，再校验口令；未配置口令则直接关闭，避免公网被随意触发。
+            # 普通查询接口不鉴权、也不限流（查询是本地 SQLite，很便宜，且校园共享出口 IP 不宜误伤）。
             if path.startswith("/api/admin"):
+                if not self._check_rate_limit():
+                    return
                 if not self._require_admin_auth():
                     return
 
@@ -1074,7 +1128,15 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
 
             if path == "/api/stations":
                 search = self._query_one(query, "search", "")
+                # 默认(无搜索)是最热的请求，缓存 25s 吸收突发并发
+                if not search:
+                    cached = _API_CACHE.get("stations")
+                    if cached is not None:
+                        self._write_json(200, {"ok": True, "data": cached})
+                        return
                 data = self.service.database.list_stations(search=search)
+                if not search:
+                    _API_CACHE.set("stations", data, 25)
                 self._write_json(200, {"ok": True, "data": data})
                 return
 
@@ -1112,7 +1174,13 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
                 return
 
             if path == "/api/locations":
-                self._write_json(200, {"ok": True, "data": load_locations()})
+                cached = _API_CACHE.get("locations")
+                if cached is not None:
+                    self._write_json(200, {"ok": True, "data": cached})
+                    return
+                data = load_locations()
+                _API_CACHE.set("locations", data, 120)  # 坐标表几乎不变，缓存 120s
+                self._write_json(200, {"ok": True, "data": data})
                 return
 
             if self._serve_static(path.lstrip("/")):
@@ -1315,12 +1383,13 @@ def serve_forever(args: argparse.Namespace) -> None:
     HistoryRequestHandler.auth_user = auth_user
     HistoryRequestHandler.auth_pass = auth_pass
 
-    # 按 IP 限流：CHARGER_RATE_LIMIT=每 IP 每窗口最大请求数(默认600)，CHARGER_RATE_WINDOW=窗口秒数(默认60)。设为0表示不限。
+    # 按 IP 限流（只作用于 /api/admin/*，即手动采集等重接口）：每 IP 每窗口最大请求数。
+    # 默认 30 次/60秒；设为 0 表示不限。普通查询接口不限流、不鉴权（本地 SQLite 很便宜且避免误伤校园共享 IP）。
     try:
-        rate_limit = int(os.environ.get("CHARGER_RATE_LIMIT", "600"))
+        rate_limit = int(os.environ.get("CHARGER_RATE_LIMIT", "30"))
         rate_window = int(os.environ.get("CHARGER_RATE_WINDOW", "60"))
     except ValueError:
-        rate_limit, rate_window = 600, 60
+        rate_limit, rate_window = 30, 60
     HistoryRequestHandler.rate_limit = max(0, rate_limit)
     HistoryRequestHandler.rate_window = max(1, rate_window)
 

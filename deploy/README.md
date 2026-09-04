@@ -65,22 +65,26 @@ systemctl status charger-monitor
 
 > 服务器上的站点列表是 `all.json`（已在 `/opt/charger-monitor/charge_history/all.json`）。首次启动会自动采样建库，约 1 分钟后就有数据。
 
-## 6.（可选）HTTPS + 你的域名
+## 6. 让链接更好看 / 加 HTTPS（Caddy 反向代理，推荐）
 
-你 README 里提到的 `https://wgooold.cn:8765`，推荐用 Caddy 一键自动 HTTPS：
+用 Caddy 反代，可以把 `http://118.24.139.8:8765/` 变成 **`http://118.24.139.8/`**（去掉端口），或配域名后变 **`https://你的域名/`**（自动 HTTPS）。仓库里已给模板 `deploy/Caddyfile.example`。
 
 ```bash
 sudo apt install -y caddy
-# 新建 /etc/caddy/Caddyfile：
-#   wgooold.cn {
-#       reverse_proxy 127.0.0.1:8765
-#   }
+sudo cp deploy/Caddyfile.example /etc/caddy/Caddyfile
+# 按需取消注释 Caddyfile 里“方案一(纯IP走80)”或“方案二(域名+HTTPS)”那段，改好域名
+sudo nano /etc/caddy/Caddyfile
 sudo systemctl enable --now caddy
-# 把域名 wgooold.cn A 记录解析到服务器 IP
+sudo systemctl reload caddy
 ```
 
-Caddy 会自动签发续期证书。之后手机访问 `https://wgooold.cn/`。
-（或让后端自带 HTTPS：改 `deploy/charger-monitor.service` 的 `ExecStart`，加 `--ssl-cert` / `--ssl-key`。）
+- **只用 IP**：放行端口 **80**；链接变成 `http://118.24.139.8/`。
+- **域名 + HTTPS**：放行端口 **80、443**；把域名 A 记录解析到 `118.24.139.8`；Caddy 自动申请并续期证书，链接变成 `https://你的域名/`。
+
+> 启用 Caddy 后，建议把后端改为只监听本机，避免 `8765` 仍明文暴露：
+> 编辑 `deploy/charger-monitor.service` 的 `ExecStart` 把 `--host 0.0.0.0` 改成 `--host 127.0.0.1`，然后
+> `sudo systemctl daemon-reload && sudo systemctl restart charger-monitor`。
+> 之后防火墙只放行 80/443（IP 模式）或只 443（域名模式）。
 
 ## 7. 更新部署
 
