@@ -152,15 +152,46 @@
   /* 列表快速筛选 */
   .filter { display: flex; gap: 6px; margin: 8px 0; }
   .fbtn { border: 1px solid var(--border); background: var(--card-hi); color: var(--muted);
-    padding: 8px 0; border-radius: 999px; font-size: 13px; cursor: pointer; flex: 1 1 0; }
-  .fbtn.on { background: var(--blue); color: #fff; border-color: transparent; font-weight: 600; }
-  .fbtn.free.on { background: var(--green); color: #043; }
-  .fbtn.busy.on { background: var(--yellow); color: #432; }
+    padding: 9px 0; border-radius: 999px; font-size: 13px; cursor: pointer; flex: 1 1 0;
+    transition: all .12s;
+    display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .fbtn b { font-size: 12px; opacity: .8; font-weight: 600; }
+  .fbtn:active { transform: scale(.96); }
+  .fbtn.on { background: var(--blue); color: #fff; border-color: transparent; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(10,132,255,.4); }
+  .fbtn.free.on { background: var(--green); color: #043; box-shadow: 0 2px 8px rgba(48,209,88,.35); }
+  .fbtn.busy.on { background: var(--yellow); color: #432; box-shadow: 0 2px 8px rgba(255,214,10,.35); }
+
+  /* 卡片三个状态胶囊 */
+  .card .card-top { display: flex; align-items: center; gap: 8px; }
+  .card .name { flex: 1 1 auto; font-weight: 600; font-size: 15px; }
+  .card .total { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .pills { display: flex; gap: 6px; margin-top: 8px; }
+  .pill { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border);
+    color: var(--muted); }
+  .pill.f { color: var(--green); }
+  .pill.b { color: var(--yellow); }
+  .pill.k { color: var(--red); }
+  .pill.hl { font-weight: 700; border-width: 2px; }
+
+  /* 自动刷新开关 */
+  .switch { border: 1px solid var(--border); background: var(--card-hi); border-radius: 999px;
+    padding: 8px 14px; font-size: 13px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .switch.on { background: var(--green); color: #043; border-color: transparent; font-weight: 600; }
+  .refresh { display: inline-flex; align-items: center; gap: 5px; }
+  .refresh.spin svg { animation: rot 0.9s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* 页脚提示 */
+  .updated { color: var(--muted); font-size: 12px; margin: 6px 0 2px; }
 
   /* 地图 */
   #view-map { position: relative; }
-  .map-note { font-size: 12px; color: var(--muted); margin: 8px 0 6px; }
-  #mapDiv { height: calc(100vh - 210px); min-height: 300px; border-radius: var(--radius);
+  .map-note { font-size: 12px; color: var(--muted); margin: 8px 0 6px; display: flex; flex-wrap: wrap;
+    gap: 10px 14px; align-items: center; }
+  .lg { display: inline-flex; align-items: center; gap: 5px; }
+  .lg .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin: 0; }
+  #mapDiv { height: calc(100vh - 250px); min-height: 300px; border-radius: var(--radius);
     border: 1px solid var(--border); overflow: hidden; background: #0b0e13; }
   #mapDiv .leaflet-popup-content { color: #111; }
   #mapDiv .leaflet-popup-content-wrapper { border-radius: 10px; }
@@ -176,21 +207,24 @@
         <button class="seg-btn on" id="listTab" onclick="setMode('list')">列表</button>
         <button class="seg-btn" id="mapTab" onclick="setMode('map')">地图</button>
       </div>
-      <button class="btn" id="refreshBtn" onclick="refresh()">刷新</button>
+      <button class="btn refresh" id="refreshBtn" onclick="refresh()">
+        <svg class="ri" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>刷新
+      </button>
     </div>
     <div class="toolbar" id="listToolbar">
       <input class="search" id="searchInput" placeholder="搜索站点…" oninput="onSearch(this.value)">
-      <button class="btn" id="autoBtn" onclick="toggleAuto()">自动:关</button>
+      <button class="switch" id="autoBtn" onclick="toggleAuto()">自动刷新</button>
     </div>
   </header>
 
   <!-- 站点列表 -->
   <section id="view-stations">
     <div class="stats" id="statsBar"></div>
+    <div class="updated" id="updatedAt"></div>
     <div class="filter" id="stationFilter">
-      <button class="fbtn on" data-f="all" onclick="setStationFilter('all')">全部</button>
-      <button class="fbtn free" data-f="free" onclick="setStationFilter('free')">空闲</button>
-      <button class="fbtn busy" data-f="busy" onclick="setStationFilter('busy')">充电中</button>
+      <button class="fbtn on" data-f="all" onclick="setStationFilter('all')">全部 <b id="cnt-all"></b></button>
+      <button class="fbtn free" data-f="free" onclick="setStationFilter('free')">空闲 <b id="cnt-free"></b></button>
+      <button class="fbtn busy" data-f="busy" onclick="setStationFilter('busy')">充电中 <b id="cnt-busy"></b></button>
     </div>
     <div class="list" id="stationList"></div>
   </section>
@@ -356,6 +390,7 @@ async function loadStations() {
   const list = await api("/api/stations" + (q ? "?search=" + encodeURIComponent(q) : ""));
   S.stations = list;
   renderStats(list, S.health ? S.health.totals : null);
+  updateFilterCounts();
   applyStationFilter();
 }
 
@@ -365,6 +400,13 @@ function stationPasses(s, f) {
   if (f === "free") return free > 0;          // 该站还有空闲插座
   if (f === "busy") return (s.busy_count||0) > 0;  // 该站有在充电的
   return true;
+}
+
+function updateFilterCounts() {
+  if (!$("cnt-all")) return;
+  $("cnt-all").textContent = S.stations.length;
+  $("cnt-free").textContent = S.stations.filter(s => stationPasses(s, "free")).length;
+  $("cnt-busy").textContent = S.stations.filter(s => stationPasses(s, "busy")).length;
 }
 
 function applyStationFilter() {
@@ -380,7 +422,7 @@ function setStationFilter(f) {
   applyStationFilter();
 }
 
-function renderStats(stations, totals) {
+function renderStats(stations) {
   let free = 0, busy = 0, broken = 0;
   stations.forEach(s => {
     const total = s.outlet_count || 0;
@@ -388,27 +430,32 @@ function renderStats(stations, totals) {
     broken += s.broken_count || 0;
     free += Math.max(0, total - (s.busy_count||0) - (s.broken_count||0));
   });
-  const html = `
+  $("statsBar").innerHTML = `
     <div class="stat free"><div class="n">${free}</div><div class="l">空闲</div></div>
     <div class="stat busy"><div class="n">${busy}</div><div class="l">充电中</div></div>
-    <div class="stat broken"><div class="n">${broken}</div><div class="l">故障</div></div>
-  `;
-  $("statsBar").innerHTML = html;
+    <div class="stat broken"><div class="n">${broken}</div><div class="l">故障</div></div>`;
+  const d = new Date();
+  $("updatedAt").textContent = "数据更新于 " + d.toTimeString().slice(0, 8);
 }
 
 function renderStations(list) {
   const box = $("stationList");
   if (!list.length) { box.innerHTML = '<div class="empty">没有匹配的站点</div>'; return; }
+  const f = S.stationFilter;
   box.innerHTML = list.map(s => {
-    const total = s.outlet_count || 0;
-    const free = Math.max(0, total - (s.busy_count||0) - (s.broken_count||0));
+    const total = s.outlet_count||0, busy = s.busy_count||0, broken = s.broken_count||0;
+    const free = Math.max(0, total - busy - broken);
     return `
       <div class="card" onclick="openOutlets(${s.station_id}, ${esc(JSON.stringify(s.station_name))})">
-        <div class="row1">
+        <div class="card-top">
           <div class="name">${esc(s.station_name)}</div>
-          ${free ? `<span class="badge free">空闲 ${free}</span>` : ""}
+          <div class="total">共 ${total} 插座</div>
         </div>
-        <div class="sub">共 ${total} 插座 · 充电中 ${s.busy_count||0} · 故障 ${s.broken_count||0}</div>
+        <div class="pills">
+          <span class="pill f ${f==="free"?"hl":""}">空闲 ${free}</span>
+          <span class="pill b ${f==="busy"?"hl":""}">充电中 ${busy}</span>
+          <span class="pill k ${broken?"hl":""}">故障 ${broken}</span>
+        </div>
       </div>`;
   }).join("");
 }
@@ -605,11 +652,11 @@ function freeOfStation(s) {
   return Math.max(0, (s.outlet_count||0) - (s.busy_count||0) - (s.broken_count||0));
 }
 
-function cGroupMarker(count, free) {
-  // free: null=无数据, 0=有数据但全满, 1=有空闲
-  const color = free == null ? "#8999ac" : (free > 0 ? "#30d158" : "#ff453a");
-  const fg = free == null ? "#333" : (free > 0 ? "#043" : "#fff");
-  return `<div style="width:30px;height:30px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:${fg};font-weight:700;font-size:13px;box-shadow:0 1px 5px rgba(0,0,0,.55)">${count}</div>`;
+function cGroupMarker(freeCount, hasData) {
+  // freeCount: 该位置“空闲插座总数”；null=无数据
+  const color = !hasData ? "#8999ac" : (freeCount > 0 ? "#30d158" : "#ff453a");
+  const fg = !hasData ? "#333" : (freeCount > 0 ? "#043" : "#fff");
+  return `<div style="width:30px;height:30px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:${fg};font-weight:700;font-size:13px;box-shadow:0 1px 5px rgba(0,0,0,.55)">${freeCount == null ? "·" : freeCount}</div>`;
 }
 
 function popupGroup(g, status) {
@@ -654,10 +701,9 @@ async function loadMap() {
       locIds.add(loc.station_id);
     });
     Object.entries(groups).forEach(([key, g]) => {
-      let hasData = false, hasFree = false;
-      g.items.forEach(loc => { const f = freeOfStation(status[loc.station_id]); if (f != null) { hasData = true; if (f > 0) hasFree = true; } });
-      const state = !hasData ? null : (hasFree ? 1 : 0);
-      const icon = L.divIcon({ className: "", html: cGroupMarker(g.items.length, state), iconSize: [32,32], iconAnchor: [16,16] });
+      let hasData = false, freeSum = 0;
+      g.items.forEach(loc => { const f = freeOfStation(status[loc.station_id]); if (f != null) { hasData = true; freeSum += f; } });
+      const icon = L.divIcon({ className: "", html: cGroupMarker(hasData ? freeSum : null, hasData), iconSize: [30,30], iconAnchor: [15,15] });
       const m = L.marker([g.lat, g.lng], { icon }).addTo(leafletMap);
       m.bindPopup(popupGroup(g, status));
       markers[key] = m;
@@ -666,8 +712,13 @@ async function loadMap() {
     const pts = Object.values(markers).map(md => md.getLatLng());
     if (pts.length) leafletMap.fitBounds(L.latLngBounds(pts).pad(0.12));
     const noCoord = stations.filter(s => !locIds.has(s.station_id));
-    $("mapNote").innerHTML = `${placed} 个位置点 · ${locIds.size} 个站点已定位` +
-      (noCoord.length ? ` · ${noCoord.length} 个待确认位置：${noCoord.map(s => esc(s.station_name)).join("、")}` : "");
+    $("mapNote").innerHTML = `
+      <span class="lg"><span class="dot" style="background:#30d158"></span>有空闲</span>
+      <span class="lg"><span class="dot" style="background:#ff453a"></span>无空闲</span>
+      <span class="lg"><span class="dot" style="background:#8999ac"></span>无数据</span>
+      <span class="lg">数字 = 空闲插座数</span>`;
+    if (noCoord.length) $("mapNote").insertAdjacentHTML("beforeend",
+      `<span class="lg">· ${noCoord.length} 个位置待确认：${noCoord.map(s => esc(s.station_name)).join("、")}</span>`);
     if (!placed) $("mapNote").textContent = "暂无站点位置数据，请运行 export_locations.py 生成坐标表";
   } catch (e) {
     toast("地图加载失败: " + e.message);
@@ -685,9 +736,11 @@ function gotoStationFromMap(sid) {
 
 /* ---------- 刷新 / 自动 ---------- */
 async function refresh() {
+  const btn = $("refreshBtn");
+  btn.classList.add("spin");
   const view = currentView();
-  await checkHealth();
   try {
+    await checkHealth();
     if (view === "view-stations") await loadStations();
     else if (view === "view-outlets") await loadOutlets();
     else if (view === "view-sessions") await loadSessions();
@@ -695,13 +748,15 @@ async function refresh() {
     else if (view === "view-map") await loadMap();
   } catch (e) {
     toast("刷新失败: " + e.message);
+  } finally {
+    setTimeout(() => btn.classList.remove("spin"), 600);
   }
 }
 function toggleAuto() {
   S.auto = !S.auto;
   const b = $("autoBtn");
-  b.textContent = S.auto ? "自动:开" : "自动:关";
-  b.className = "btn" + (S.auto ? " on" : "");
+  b.textContent = S.auto ? "自动刷新 ✓" : "自动刷新";
+  b.classList.toggle("on", S.auto);
   if (S.timer) { clearInterval(S.timer); S.timer = null; }
   if (S.auto) {
     S.timer = setInterval(() => { const v = currentView(); if (v === "view-stations" || v === "view-outlets" || v === "view-map") refresh(); }, 30000);
