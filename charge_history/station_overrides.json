@@ -1,0 +1,11 @@
+{
+  "_说明": "手动坐标校正文件（JSON 不支持注释，这里用 _说明 字段）。把下面站的 latitude/longitude 改成正确值即可覆盖源数据；清空为 null 表示不覆盖。",
+  "67985": { "station_name": "电子科大清水河校区光电学院3号电站", "latitude": null, "longitude": null },
+  "67929": { "station_name": "电子科大清水河校区光电学院2号充电桩", "latitude": null, "longitude": null },
+  "67938": { "station_name": "电子科大清水河校区光电学院1号充电桩", "latitude": null, "longitude": null },
+  "231328": { "station_name": "电子科大清水河校区学子餐厅辅路3号电站", "latitude": null, "longitude": null },
+  "252117": { "station_name": "集成电路与系统工程系5号充电桩", "latitude": null, "longitude": null },
+  "252479": { "station_name": "集成电路与系统系1号充电桩", "latitude": null, "longitude": null },
+  "252484": { "station_name": "集成电路与系统工程系4换充电桩", "latitude": null, "longitude": null },
+  "252486": { "station_name": "集成电路与系统系3号充电桩", "latitude": null, "longitude": null }
+}

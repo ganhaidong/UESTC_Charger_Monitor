@@ -221,18 +221,48 @@ _LOCATIONS_CACHE: Optional[List[Dict[str, Any]]] = None
 
 
 def load_locations() -> List[Dict[str, Any]]:
-    """读取站点位置表（station_locations.json），供 /api/locations 使用。"""
+    """读取站点位置表（station_locations.json），并应用手动坐标校正（station_overrides.json）。"""
     global _LOCATIONS_CACHE
     if _LOCATIONS_CACHE is not None:
         return _LOCATIONS_CACHE
     path = RUNTIME_DIR / "station_locations.json"
     if path.exists():
         try:
-            _LOCATIONS_CACHE = json.loads(path.read_text(encoding="utf-8"))
+            data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            _LOCATIONS_CACHE = []
+            data = []
     else:
-        _LOCATIONS_CACHE = []
+        data = []
+
+    # 手动校正：源数据给个别站点错的坐标时，用这个文件修正（key=station_id）
+    overrides = {}
+    ov_path = RUNTIME_DIR / "station_overrides.json"
+    if ov_path.exists():
+        try:
+            overrides = json.loads(ov_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            overrides = {}
+    if overrides:
+        by_id = {str(item.get("station_id")): item for item in data}
+        for sid, ov in overrides.items():
+            if not str(sid).isdigit():
+                continue  # 跳过 _说明 等非数字键
+            if sid in by_id:
+                item = by_id[sid]
+                for k in ("latitude", "longitude", "station_name", "address"):
+                    if ov.get(k) is not None:
+                        item[k] = ov[k]
+            else:
+                data.append({
+                    "station_id": int(sid),
+                    "station_name": ov.get("station_name", ""),
+                    "address": ov.get("address", ""),
+                    "latitude": ov.get("latitude"),
+                    "longitude": ov.get("longitude"),
+                    "free_num": ov.get("free_num", 0),
+                })
+
+    _LOCATIONS_CACHE = data
     return _LOCATIONS_CACHE
 
 
