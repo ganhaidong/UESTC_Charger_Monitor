@@ -33,3 +33,6 @@ python charge_history/charge_history_backend.py --host 0.0.0.0
 ## 三、致谢
 - 数据来自「闪开来电」(issks) 充电平台接口。
 - 原始工具由 [WGooold](https://github.com/WGooold/UESTC_Charger_Monitor) 开发，本仓库在其基础上扩展了**网页前端、地图定位、坐标标定与云端部署**。
+## 四、未来优化
+- 要是每个充电桩位置都有实景拍照就好了，这样上传后就能直接看充电桩位置的图片，而不是地图上的标记。（实地拍照可能需要大家共同的努力）
+- 欢迎大家提意见和建议，或贡献代码。
