@@ -600,20 +600,33 @@ function buildMap() {
   }).addTo(leafletMap);
 }
 
-function cMarker(free) {
-  const color = free == null ? "#8999ac" : (free > 0 ? "#30d158" : "#ff453a");
-  return `<div style="width:26px;height:26px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#043;font-weight:700;font-size:12px;box-shadow:0 1px 5px rgba(0,0,0,.55)">${free==null?"?":free}</div>`;
+function freeOfStation(s) {
+  if (!s) return null;
+  return Math.max(0, (s.outlet_count||0) - (s.busy_count||0) - (s.broken_count||0));
 }
 
-function popupHtml(loc, s) {
-  const free = s ? (s.outlet_count - (s.busy_count||0) - (s.broken_count||0)) : null;
-  const stat = s ? `${free} 空闲 · ${s.busy_count||0} 充电中 · ${s.broken_count||0} 故障` : "暂无实时数据";
-  return `<div style="min-width:170px">
-    <div style="font-weight:600;font-size:14px">${esc(loc.station_name)}</div>
-    <div style="color:#666;font-size:12px;margin-top:4px">${esc(loc.address||"(无地址)")}</div>
-    <div style="margin:6px 0;font-size:13px">${stat}</div>
-    <button class="btn" style="width:100%" onclick="gotoStationFromMap(${loc.station_id})">查看插座</button>
-  </div>`;
+function cGroupMarker(count, free) {
+  // free: null=无数据, 0=有数据但全满, 1=有空闲
+  const color = free == null ? "#8999ac" : (free > 0 ? "#30d158" : "#ff453a");
+  const fg = free == null ? "#333" : (free > 0 ? "#043" : "#fff");
+  return `<div style="width:30px;height:30px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:${fg};font-weight:700;font-size:13px;box-shadow:0 1px 5px rgba(0,0,0,.55)">${count}</div>`;
+}
+
+function popupGroup(g, status) {
+  let html = `<div style="max-width:240px;max-height:300px;overflow:auto">
+    <div style="font-weight:700;font-size:14px;margin-bottom:4px">${g.items.length} 个站点（同一位置）</div>`;
+  g.items.forEach(loc => {
+    const s = status[loc.station_id];
+    const f = freeOfStation(s);
+    const freeText = s ? `${f} 空闲 · ${s.busy_count||0} 充电中 · ${s.broken_count||0} 故障` : "无实时数据";
+    html += `<div style="border-top:1px solid #eee;padding:6px 0">
+      <div style="font-size:13px;font-weight:600">${esc(loc.station_name)}</div>
+      <div style="font-size:12px;color:#666">${freeText}</div>
+      <button class="btn" style="width:100%;margin-top:4px" onclick="gotoStationFromMap(${loc.station_id})">查看插座</button>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
 }
 
 async function loadMap() {
@@ -628,24 +641,32 @@ async function loadMap() {
     markers = {};
     let placed = 0;
     const locIds = new Set();
+    // 按近似坐标合并同址站点（接口给的坐标是楼栋级，同楼不同站会重合）
+    const groups = {};
     locs.forEach(loc => {
       if (loc.latitude == null || loc.longitude == null) return;
       let lng = loc.longitude, lat = loc.latitude;
       if (MAP.gcjToWgs) { const w = gcj02ToWgs84(lng, lat); lng = w[0]; lat = w[1]; }
-      const s = status[loc.station_id];
-      const free = s ? (s.outlet_count - (s.busy_count||0) - (s.broken_count||0)) : null;
-      const icon = L.divIcon({ className: "", html: cMarker(free), iconSize: [28,28], iconAnchor: [14,14] });
-      const m = L.marker([lat, lng], { icon }).addTo(leafletMap);
-      m.bindPopup(popupHtml(loc, s));
-      markers[loc.station_id] = m;
+      const key = lat.toFixed(5) + "," + lng.toFixed(5);
+      if (!groups[key]) groups[key] = { lat, lng, items: [] };
+      groups[key].items.push(loc);
       S.locationById[loc.station_id] = loc;
       locIds.add(loc.station_id);
+    });
+    Object.entries(groups).forEach(([key, g]) => {
+      let hasData = false, hasFree = false;
+      g.items.forEach(loc => { const f = freeOfStation(status[loc.station_id]); if (f != null) { hasData = true; if (f > 0) hasFree = true; } });
+      const state = !hasData ? null : (hasFree ? 1 : 0);
+      const icon = L.divIcon({ className: "", html: cGroupMarker(g.items.length, state), iconSize: [32,32], iconAnchor: [16,16] });
+      const m = L.marker([g.lat, g.lng], { icon }).addTo(leafletMap);
+      m.bindPopup(popupGroup(g, status));
+      markers[key] = m;
       placed++;
     });
     const pts = Object.values(markers).map(md => md.getLatLng());
     if (pts.length) leafletMap.fitBounds(L.latLngBounds(pts).pad(0.12));
     const noCoord = stations.filter(s => !locIds.has(s.station_id));
-    $("mapNote").innerHTML = `${placed} 个站点已定位` +
+    $("mapNote").innerHTML = `${placed} 个位置点 · ${locIds.size} 个站点已定位` +
       (noCoord.length ? ` · ${noCoord.length} 个待确认位置：${noCoord.map(s => esc(s.station_name)).join("、")}` : "");
     if (!placed) $("mapNote").textContent = "暂无站点位置数据，请运行 export_locations.py 生成坐标表";
   } catch (e) {
