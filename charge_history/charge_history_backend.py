@@ -17,12 +17,17 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import datetime as dt
+import hmac
 import json
+import os
 import ssl
 import sqlite3
 import threading
+import time
 import traceback
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -30,7 +35,23 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
 RUNTIME_DIR = Path(__file__).resolve().parent
+WEB_DIR = RUNTIME_DIR / "web"
 from charger_api import fetch_station
+
+
+CONTENT_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".ico": "image/x-icon",
+    ".webp": "image/webp",
+}
 
 
 STATUS_FREE = 1
@@ -194,6 +215,25 @@ def load_station_map(path: Path, limit: Optional[int] = None) -> Dict[str, int]:
     if limit:
         items = items[:limit]
     return {name: int(station_id) for name, station_id in items}
+
+
+_LOCATIONS_CACHE: Optional[List[Dict[str, Any]]] = None
+
+
+def load_locations() -> List[Dict[str, Any]]:
+    """读取站点位置表（station_locations.json），供 /api/locations 使用。"""
+    global _LOCATIONS_CACHE
+    if _LOCATIONS_CACHE is not None:
+        return _LOCATIONS_CACHE
+    path = RUNTIME_DIR / "station_locations.json"
+    if path.exists():
+        try:
+            _LOCATIONS_CACHE = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _LOCATIONS_CACHE = []
+    else:
+        _LOCATIONS_CACHE = []
+    return _LOCATIONS_CACHE
 
 
 def estimate_session_start(sample_time: str, used_min: Optional[int]) -> str:
@@ -976,6 +1016,15 @@ class HistoryService:
 
 class HistoryRequestHandler(BaseHTTPRequestHandler):
     service: Optional[HistoryService] = None
+    # 管理接口口令（Basic Auth）：None 表示未配置。由 serve_forever 从环境变量注入。
+    # 只作用于 /api/admin/*（如 /api/admin/collect）；普通查询接口不鉴权、全开放。
+    auth_user: Optional[str] = None
+    auth_pass: Optional[str] = None
+    # 按 IP 限流：rate_window 秒内每个 IP 最多 rate_limit 次请求；0 表示不限。
+    rate_limit: int = 0
+    rate_window: int = 60
+    _hits: Dict[str, "deque[float]"] = {}
+    _hits_lock = threading.Lock()
 
     def do_OPTIONS(self) -> None:
         self.send_response(204)
@@ -983,12 +1032,21 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
+        if not self._check_rate_limit():
+            return
         try:
             parsed = urlparse(self.path)
             query = parse_qs(parsed.query)
             path = parsed.path.rstrip("/") or "/"
 
-            if path == "/":
+            # 管理接口需要口令；未配置口令则直接关闭，避免公网被随意触发。
+            if path.startswith("/api/admin"):
+                if not self._require_admin_auth():
+                    return
+
+            if path == "/" or path == "/index.html":
+                if self._serve_static("index.html"):
+                    return
                 self._write_json(
                     200,
                     {
@@ -1053,6 +1111,12 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
                 self._write_json(200, {"ok": True, "data": data})
                 return
 
+            if path == "/api/locations":
+                self._write_json(200, {"ok": True, "data": load_locations()})
+                return
+
+            if self._serve_static(path.lstrip("/")):
+                return
             self._write_json(404, {"ok": False, "error": f"未知接口: {path}"})
         except ValueError as exc:
             self._write_json(400, {"ok": False, "error": str(exc)})
@@ -1083,6 +1147,74 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
+    def _check_rate_limit(self) -> bool:
+        """按 IP 限流：窗口内超过阈值则返回 429。rate_limit=0 时不限。"""
+        if not self.rate_limit:
+            return True
+        ip = self.client_address[0] if self.client_address else "?"
+        now = time.time()
+        with self._hits_lock:
+            dq = self._hits.setdefault(ip, deque())
+            while dq and dq[0] <= now - self.rate_window:
+                dq.popleft()
+            if len(dq) >= self.rate_limit:
+                self._send_too_many()
+                return False
+            dq.append(now)
+            # 内存保护：列表过大时清理空桶
+            if len(self._hits) > 10000 and dq is not None:
+                for k in [k for k, v in self._hits.items() if not v]:
+                    self._hits.pop(k, None)
+        return True
+
+    def _send_too_many(self) -> None:
+        body = json.dumps({"ok": False, "error": "访问过于频繁，请稍后再试"}, ensure_ascii=False).encode("utf-8")
+        self.send_response(429)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _require_admin_auth(self) -> bool:
+        """仅 /api/admin/* 需要口令；未配置口令时直接关闭（403）。"""
+        if not self.auth_user:
+            self._send_forbidden("手动采集已关闭（未配置管理口令）")
+            return False
+        header = self.headers.get("Authorization")
+        if header and header.startswith("Basic "):
+            try:
+                decoded = base64.b64decode(header[6:].strip()).decode("utf-8")
+                user, _, pw = decoded.partition(":")
+            except Exception:
+                user, pw = "", ""
+            if (
+                hmac.compare_digest(user, self.auth_user)
+                and hmac.compare_digest(pw, self.auth_pass or "")
+            ):
+                return True
+        self._send_auth_challenge()
+        return False
+
+    def _send_forbidden(self, msg: str) -> None:
+        body = json.dumps({"ok": False, "error": msg}, ensure_ascii=False).encode("utf-8")
+        self.send_response(403)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_auth_challenge(self) -> None:
+        body = json.dumps({"ok": False, "error": "需要管理口令"}, ensure_ascii=False).encode("utf-8")
+        self.send_response(401)
+        self.send_header("WWW-Authenticate", 'Basic realm="charger-monitor", charset="UTF-8"')
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _write_json(self, status: int, payload: Dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -1090,6 +1222,36 @@ class HistoryRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _write_bytes(self, status: int, body: bytes, content_type: str) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_static(self, rel_path: str) -> bool:
+        """从 WEB_DIR 提供静态文件；找不到返回 False。"""
+        if not WEB_DIR.is_dir():
+            return False
+        rel_path = rel_path or "index.html"
+        candidate = (WEB_DIR / rel_path).resolve()
+        try:
+            candidate.relative_to(WEB_DIR.resolve())
+        except ValueError:
+            return False
+        if not candidate.is_file():
+            return False
+        ext = candidate.suffix.lower()
+        content_type = CONTENT_TYPES.get(ext, "application/octet-stream")
+        try:
+            body = candidate.read_bytes()
+        except OSError:
+            return False
+        self._write_bytes(200, body, content_type)
+        return True
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -1143,6 +1305,25 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def serve_forever(args: argparse.Namespace) -> None:
     service = HistoryService(args)
     HistoryRequestHandler.service = service
+
+    # 管理口令（仅作用于 /api/admin/*）：设置 CHARGER_AUTH_USER / CHARGER_AUTH_PASS 即启用。
+    auth_user = os.environ.get("CHARGER_AUTH_USER")
+    auth_pass = os.environ.get("CHARGER_AUTH_PASS")
+    if bool(auth_user) ^ bool(auth_pass):
+        print("[history] 警告: CHARGER_AUTH_USER 与 CHARGER_AUTH_PASS 必须同时设置，本次管理接口将被关闭")
+        auth_user = auth_pass = None
+    HistoryRequestHandler.auth_user = auth_user
+    HistoryRequestHandler.auth_pass = auth_pass
+
+    # 按 IP 限流：CHARGER_RATE_LIMIT=每 IP 每窗口最大请求数(默认600)，CHARGER_RATE_WINDOW=窗口秒数(默认60)。设为0表示不限。
+    try:
+        rate_limit = int(os.environ.get("CHARGER_RATE_LIMIT", "600"))
+        rate_window = int(os.environ.get("CHARGER_RATE_WINDOW", "60"))
+    except ValueError:
+        rate_limit, rate_window = 600, 60
+    HistoryRequestHandler.rate_limit = max(0, rate_limit)
+    HistoryRequestHandler.rate_window = max(1, rate_window)
+
     server = ThreadingHTTPServer((args.host, args.port), HistoryRequestHandler)
     server.daemon_threads = True
     scheme = "http"
@@ -1157,6 +1338,9 @@ def serve_forever(args: argparse.Namespace) -> None:
     print(f"[history] database    : {service.db_path}")
     print(f"[history] stations    : {len(service.station_map)}")
     print(f"[history] listen      : {scheme}://{args.host}:{args.port}")
+    print(f"[history] admin-auth  : {'on (' + (auth_user or '') + ') 仅 /api/admin/*' if auth_user else 'off (管理接口已关闭)'}")
+    print(f"[history] rate-limit  : {HistoryRequestHandler.rate_limit} req/{HistoryRequestHandler.rate_window}s per IP" +
+          (" (disabled)" if not HistoryRequestHandler.rate_limit else ""))
     if args.no_collector:
         print("[history] collector   : disabled")
     else:

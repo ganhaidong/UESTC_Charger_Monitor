@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行时数据（不要进版本库，避免数据库被提交）
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+charge_history/charge_history.db*
+charge_history/charge_history_demo.db-shm
+charge_history/charge_history_demo.db-wal
+
+# 本地前端配置
+charge_history_ui_config.json
+
+# macOS / 编辑器
+.DS_Store
+.idea/
+.vscode/

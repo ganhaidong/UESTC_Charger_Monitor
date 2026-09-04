@@ -1,0 +1,24 @@
+[Unit]
+Description=Charger Monitor History Backend (UESTC)
+After=network.target
+
+[Service]
+Type=simple
+User=charger
+Group=charger
+WorkingDirectory=/opt/charger-monitor/charge_history
+Environment=PYTHONUNBUFFERED=1
+# 可选：管理口令 + 限流。在 /etc/charger-monitor.env 填 CHARGER_AUTH_USER/CHARGER_AUTH_PASS
+# （仅 /api/admin/* 需口令）、CHARGER_RATE_LIMIT/CHARGER_RATE_WINDOW（按 IP 限流）。缺省时查询接口全开放。
+EnvironmentFile=-/etc/charger-monitor.env
+# 如需 HTTPS，把下面改成带证书
+
+
+参数的启动，例如：
+#   --ssl-cert /etc/letsencrypt/live/wgooold.cn/fullchain.pem --ssl-key /etc/letsencrypt/live/wgooold.cn/privkey.pem
+ExecStart=/opt/charger-monitor/.venv/bin/python charge_history_backend.py --host 0.0.0.0 --port 8765
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

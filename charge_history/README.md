@@ -9,6 +9,25 @@
 - `charge_history_seed.py`：生成演示数据库
 - `all.json`：站点清单
 - `charge_history_demo.db`：演示数据
+- `export_locations.py`：导出全部站点的地址/经纬度 → `station_locations.json`
+- `web/`：手机网页前端（含地图页签）
+
+## 站点位置标定（地图）
+
+每个站点在充电接口里都带 `address + latitude/longitude`，可用于在真实地图上标定：
+事先生成一次坐标表（121 站里 120 站有坐标，仅“综合楼电站 49790”需手动补）：
+
+```powershell
+python charge_history/export_locations.py
+```
+
+后端已提供 `GET /api/locations` 返回这份坐标表，网页“地图”页签读取并在地图上打点。
+如需更换底图，改 `web/index.html` 顶部 `MAP` 配置：
+
+- 默认 OpenStreetMap（WGS-84，需联网，代码里已自动做 GCJ-02→WGS-84 转换）：
+  `tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"`，`gcjToWgs = true`
+- 高德中文底图（GCJ-02 原生、无需转换，若被限流可换回）：
+  `tileUrl = "https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}"`，`gcjToWgs = false`
 
 ## 本地运行
 
@@ -23,6 +42,23 @@ python charge_history/charge_history_backend.py
 ```powershell
 python charge_history/charge_history_ui.py
 ```
+
+## 手机 / 浏览器访问（推荐）
+
+后端自带一个移动端网页，电脑、手机浏览器打开即可用，无需装 App：
+
+```powershell
+python charge_history/charge_history_backend.py --host 0.0.0.0
+```
+
+- 本机打开：<http://127.0.0.1:8765/>
+- 同一 Wi-Fi 的手机打开：`http://<电脑局域网IP>:8765/`（如 `http://192.168.1.103:8765/`）
+- 网页源码在 `web/index.html`，托管逻辑在 `charge_history_backend.py` 的静态文件路由里
+
+项目根目录还提供了双击启动脚本：
+
+- macOS：双击 `start_server.command`
+- Windows：双击 `start_server.bat`
 
 ## 演示数据
 

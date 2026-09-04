@@ -1,0 +1,1018 @@
+[
+  {
+    "station_id": 120204,
+    "station_name": "电子科大清水河校区创新中心3号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177968,
+    "station_name": "成电国际创新中心D区3号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177970,
+    "station_name": "成电国际创新中心D区2号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177972,
+    "station_name": "成电国际创新中心D区1号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177975,
+    "station_name": "成电国际创新中心D区5号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177977,
+    "station_name": "成电国际创新中心D区6号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 177983,
+    "station_name": "成电国际创新中心D区4号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-成电国际创新中心",
+    "latitude": 30.74681021891099,
+    "longitude": 103.92429703135603,
+    "free_num": 0
+  },
+  {
+    "station_id": 74631,
+    "station_name": "清水河校区众创空间2号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)临港科技众创空间",
+    "latitude": 30.744555824480088,
+    "longitude": 103.92493776660955,
+    "free_num": 6
+  },
+  {
+    "station_id": 164700,
+    "station_name": "数学科学学院2号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.748423313492133,
+    "longitude": 103.92303500160432,
+    "free_num": 0
+  },
+  {
+    "station_id": 164702,
+    "station_name": "数学科学学院1号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.748423313492133,
+    "longitude": 103.92303500160432,
+    "free_num": 0
+  },
+  {
+    "station_id": 74695,
+    "station_name": "电子科大清水河校区创新中心1号电站1号",
+    "address": "成都市郫都区电子科技大学创新中心",
+    "latitude": 30.749139081285602,
+    "longitude": 103.92454755481296,
+    "free_num": 1
+  },
+  {
+    "station_id": 74713,
+    "station_name": "电子科大清水河校区创新中心2号电站",
+    "address": "成都市郫都区电子科技大学创新中心",
+    "latitude": 30.749139081285602,
+    "longitude": 103.92454755481296,
+    "free_num": 0
+  },
+  {
+    "station_id": 88641,
+    "station_name": "电子科大清水河校区经管学院3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-经管学院",
+    "latitude": 30.75081595261256,
+    "longitude": 103.92451162527466,
+    "free_num": 0
+  },
+  {
+    "station_id": 88936,
+    "station_name": "电子科大清水河校区经管学院2号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-经管学院",
+    "latitude": 30.75081595261256,
+    "longitude": 103.92451162527466,
+    "free_num": 1
+  },
+  {
+    "station_id": 88945,
+    "station_name": "电子科大清水河校区经管学院1号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-经管学院",
+    "latitude": 30.75081595261256,
+    "longitude": 103.92451162527466,
+    "free_num": 1
+  },
+  {
+    "station_id": 74677,
+    "station_name": "电子科大清水河校区主楼C 区停车场1号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区主楼C1区",
+    "latitude": 30.745911073535375,
+    "longitude": 103.92871214319895,
+    "free_num": 0
+  },
+  {
+    "station_id": 74719,
+    "station_name": "电子科大清水河校区主楼C 区停车场3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区主楼C1区",
+    "latitude": 30.745911073535375,
+    "longitude": 103.92871214319895,
+    "free_num": 8
+  },
+  {
+    "station_id": 74746,
+    "station_name": "电子科大清水河校区主楼C 区停车场2号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区主楼C1区",
+    "latitude": 30.745911073535375,
+    "longitude": 103.92871214319895,
+    "free_num": 0
+  },
+  {
+    "station_id": 67985,
+    "station_name": "电子科大清水河校区光电学院3号电站",
+    "address": "成都市郫都区四川成都市高新西区合作路89号",
+    "latitude": 30.752749727627105,
+    "longitude": 103.92167400344154,
+    "free_num": 0
+  },
+  {
+    "station_id": 135612,
+    "station_name": "清水河研究院大楼3号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-研究院大楼",
+    "latitude": 30.751937741501862,
+    "longitude": 103.92584602167592,
+    "free_num": 1
+  },
+  {
+    "station_id": 135640,
+    "station_name": "清水河研究院大楼4号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-研究院大楼",
+    "latitude": 30.751937741501862,
+    "longitude": 103.92584602167592,
+    "free_num": 2
+  },
+  {
+    "station_id": 54464,
+    "station_name": "电子科大清水河校区研究院大楼1号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-研究院大楼",
+    "latitude": 30.752132041585813,
+    "longitude": 103.92590595925547,
+    "free_num": 0
+  },
+  {
+    "station_id": 58090,
+    "station_name": "电子科大清水河校区研究院大楼2号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-研究院大楼",
+    "latitude": 30.752132041585813,
+    "longitude": 103.92590595925547,
+    "free_num": 1
+  },
+  {
+    "station_id": 67929,
+    "station_name": "电子科大清水河校区光电学院2号充电桩",
+    "address": "成都市郫都区四川成都市高新西区合作路89号19拣117",
+    "latitude": 30.753133456948465,
+    "longitude": 103.92144515608376,
+    "free_num": 3
+  },
+  {
+    "station_id": 135606,
+    "station_name": "清水河物理学院9号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 1
+  },
+  {
+    "station_id": 137064,
+    "station_name": "清水河物理学院8号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 6
+  },
+  {
+    "station_id": 179223,
+    "station_name": "清水河物理学院7号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 2
+  },
+  {
+    "station_id": 179227,
+    "station_name": "清水河物理学院1号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 2
+  },
+  {
+    "station_id": 179510,
+    "station_name": "清水河物理学院3号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 4
+  },
+  {
+    "station_id": 179515,
+    "station_name": "清水河物理学院4号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 5
+  },
+  {
+    "station_id": 179521,
+    "station_name": "清水河物理学院6号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 1
+  },
+  {
+    "station_id": 179524,
+    "station_name": "清水河物理学院2号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 1
+  },
+  {
+    "station_id": 179529,
+    "station_name": "清水河物理学院5号充电桩",
+    "address": "成都市郫都区电子科技大学-物理学院",
+    "latitude": 30.75291104664567,
+    "longitude": 103.9262944928131,
+    "free_num": 2
+  },
+  {
+    "station_id": 67938,
+    "station_name": "电子科大清水河校区光电学院1号充电桩",
+    "address": "合作路89号",
+    "latitude": 30.753907847233517,
+    "longitude": 103.92065850844507,
+    "free_num": 5
+  },
+  {
+    "station_id": 40152,
+    "station_name": "电子科大清水河校区基础教学楼2号电站",
+    "address": "成都市郫都区电子科技大学清水河校区-基础实验大楼",
+    "latitude": 30.750857053831073,
+    "longitude": 103.93062534685514,
+    "free_num": 1
+  },
+  {
+    "station_id": 137011,
+    "station_name": "清水河校区基础教学楼4号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-基础实验大楼",
+    "latitude": 30.750857053831073,
+    "longitude": 103.93062534685514,
+    "free_num": 0
+  },
+  {
+    "station_id": 137073,
+    "station_name": "清水河校区基础教学楼3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-基础实验大楼",
+    "latitude": 30.750857053831073,
+    "longitude": 103.93062534685514,
+    "free_num": 0
+  },
+  {
+    "station_id": 74704,
+    "station_name": "电子科大清水河校区众创空间1号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-众创空间",
+    "latitude": 30.744032563254212,
+    "longitude": 103.93238833426425,
+    "free_num": 3
+  },
+  {
+    "station_id": 26815,
+    "station_name": "清水河立人楼2号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区立人楼",
+    "latitude": 30.748797858771386,
+    "longitude": 103.93244235769963,
+    "free_num": 0
+  },
+  {
+    "station_id": 74716,
+    "station_name": "电子科大清水河校区立人楼充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区立人楼",
+    "latitude": 30.748797858771386,
+    "longitude": 103.93244235769963,
+    "free_num": 0
+  },
+  {
+    "station_id": 120197,
+    "station_name": "清水河立人楼3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区立人楼",
+    "latitude": 30.748797858771386,
+    "longitude": 103.93244235769963,
+    "free_num": 1
+  },
+  {
+    "station_id": 74743,
+    "station_name": "电子科大清水河校区科研教学楼B区3号电站",
+    "address": "成都市郫都区电子科技大学清水河校区-科研教学楼",
+    "latitude": 30.752029299004775,
+    "longitude": 103.93053368808926,
+    "free_num": 0
+  },
+  {
+    "station_id": 54453,
+    "station_name": "电子科大清水河校区科研教学楼B区1号电站",
+    "address": "成都市郫都区电子科技大学清水河校区科研教学楼-B区",
+    "latitude": 30.751939513402732,
+    "longitude": 103.93113013230412,
+    "free_num": 0
+  },
+  {
+    "station_id": 58935,
+    "station_name": "电子科大清水河校区科研教学楼B区2号电站",
+    "address": "成都市郫都区电子科技大学清水河校区科研教学楼-B区",
+    "latitude": 30.751939513402732,
+    "longitude": 103.93113013230412,
+    "free_num": 0
+  },
+  {
+    "station_id": 40154,
+    "station_name": "电子科大清水河校区基础教学楼1号电站",
+    "address": "成都市郫都区电子科技大学清水河校区-基础实验大楼",
+    "latitude": 30.755079283368627,
+    "longitude": 103.92650066032147,
+    "free_num": 0
+  },
+  {
+    "station_id": 61021,
+    "station_name": "电子科大清水河校区西门3号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-西门",
+    "latitude": 30.755079283368627,
+    "longitude": 103.92650066032147,
+    "free_num": 1
+  },
+  {
+    "station_id": 61025,
+    "station_name": "电子科大清水河校区西门2号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-西门",
+    "latitude": 30.755079283368627,
+    "longitude": 103.92650066032147,
+    "free_num": 0
+  },
+  {
+    "station_id": 61026,
+    "station_name": "电子科大清水河校区西门1号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-西门",
+    "latitude": 30.755079283368627,
+    "longitude": 103.92650066032147,
+    "free_num": 2
+  },
+  {
+    "station_id": 252490,
+    "station_name": "集成电路与系统工程系6号充电桩",
+    "address": "电子科技大学集成电路科学与工程学院A栋",
+    "latitude": 30.753112798508184,
+    "longitude": 103.93058671837386,
+    "free_num": 0
+  },
+  {
+    "station_id": 117895,
+    "station_name": "数学科学学院6号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.754736739439924,
+    "longitude": 103.92946279311207,
+    "free_num": 0
+  },
+  {
+    "station_id": 117910,
+    "station_name": "数学科学学院7号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.754736739439924,
+    "longitude": 103.92946279311207,
+    "free_num": 0
+  },
+  {
+    "station_id": 164685,
+    "station_name": "数学科学学院5号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.754736739439924,
+    "longitude": 103.92946279311207,
+    "free_num": 0
+  },
+  {
+    "station_id": 164698,
+    "station_name": "数学科学学院4号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.754736739439924,
+    "longitude": 103.92946279311207,
+    "free_num": 0
+  },
+  {
+    "station_id": 172669,
+    "station_name": "数学科学学院3号充电桩",
+    "address": "电子科技大学清水河校区数学科学学院",
+    "latitude": 30.754736739439924,
+    "longitude": 103.92946279311207,
+    "free_num": 0
+  },
+  {
+    "station_id": 54456,
+    "station_name": "电子科大清水河紫荆餐厅充电桩",
+    "address": "成都市郫都区紫荆餐厅",
+    "latitude": 30.754680654606773,
+    "longitude": 103.93020202449554,
+    "free_num": 3
+  },
+  {
+    "station_id": 74685,
+    "station_name": "电子科大清水河校区紫荆餐厅2号充电桩",
+    "address": "成都市郫都区紫荆餐厅(银杏苑东)",
+    "latitude": 30.754680654606773,
+    "longitude": 103.93020202449554,
+    "free_num": 6
+  },
+  {
+    "station_id": 74675,
+    "station_name": "电子科大清水河校区后勤保障部绿化维修中心充电桩",
+    "address": "成都市郫都区电子科技大学后勤保障部绿化维护中心",
+    "latitude": 30.74321101774878,
+    "longitude": 103.93503320691299,
+    "free_num": 8
+  },
+  {
+    "station_id": 40167,
+    "station_name": "电子科大清水河校区学子餐厅辅道2号电站",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.75276416401602,
+    "longitude": 103.93436458848126,
+    "free_num": 4
+  },
+  {
+    "station_id": 54468,
+    "station_name": "电子科大清水河校区学子餐厅辅道4号电站",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.75276416401602,
+    "longitude": 103.93436458848126,
+    "free_num": 6
+  },
+  {
+    "station_id": 56937,
+    "station_name": "电子科大清水河校区学子餐厅辅路1号电站",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.75276416401602,
+    "longitude": 103.93436458848126,
+    "free_num": 2
+  },
+  {
+    "station_id": 67922,
+    "station_name": "电子科大清水河校区学子餐厅9号充电桩",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.752706740510618,
+    "longitude": 103.93441640793652,
+    "free_num": 4
+  },
+  {
+    "station_id": 73096,
+    "station_name": "电子科大清水河校区学子餐厅6号充电桩",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.752706740510618,
+    "longitude": 103.93441640793652,
+    "free_num": 4
+  },
+  {
+    "station_id": 73262,
+    "station_name": "电子科大清水河校区学子餐厅7号充电桩",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.752706740510618,
+    "longitude": 103.93441640793652,
+    "free_num": 4
+  },
+  {
+    "station_id": 73264,
+    "station_name": "电子科大清水河校区学子餐厅8号充电桩",
+    "address": "成都市郫都区学子餐厅",
+    "latitude": 30.752706740510618,
+    "longitude": 103.93441640793652,
+    "free_num": 7
+  },
+  {
+    "station_id": 67924,
+    "station_name": "电子科大清水河校区学子餐厅5号充电桩",
+    "address": "四川省成都市郫都区",
+    "latitude": 30.75259630316069,
+    "longitude": 103.93455592683722,
+    "free_num": 4
+  },
+  {
+    "station_id": 51641,
+    "station_name": "电子科大清水河校区商业街5号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 8
+  },
+  {
+    "station_id": 56922,
+    "station_name": "电子科大清水河校区商业街4号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 7
+  },
+  {
+    "station_id": 56924,
+    "station_name": "电子科大清水河校区商业街2号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680541267006,
+    "longitude": 103.92977970971103,
+    "free_num": 6
+  },
+  {
+    "station_id": 56929,
+    "station_name": "电子科大清水河校区商业街3号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 7
+  },
+  {
+    "station_id": 56934,
+    "station_name": "电子科大清水河校区商业街1号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 7
+  },
+  {
+    "station_id": 67951,
+    "station_name": "电子科大清水河校区商业街6号电站",
+    "address": "成都市郫都区电子科技大学清水河校区商业街",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 6
+  },
+  {
+    "station_id": 88939,
+    "station_name": "电子科大清水河校区商业街9号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-商业街红旗超市",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 8
+  },
+  {
+    "station_id": 120161,
+    "station_name": "电子科大清水河校区商业街7号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-商业街红旗超市",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 5
+  },
+  {
+    "station_id": 120170,
+    "station_name": "电子科大清水河校区商业街8号电站",
+    "address": "成都市郫都区电子科技大学(清水河校区)-商业街红旗超市",
+    "latitude": 30.75680640482832,
+    "longitude": 103.92977871243092,
+    "free_num": 7
+  },
+  {
+    "station_id": 58955,
+    "station_name": "电子科大清水河校区后勤服务中心充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区后勤服务中心",
+    "latitude": 30.75558059887164,
+    "longitude": 103.93208328003176,
+    "free_num": 5
+  },
+  {
+    "station_id": 73266,
+    "station_name": "电子科大清水河校区硕丰十组团充电桩",
+    "address": "电子科大清水河校区博翰苑9栋",
+    "latitude": 30.75170742391203,
+    "longitude": 103.93577062377047,
+    "free_num": 7
+  },
+  {
+    "station_id": 164722,
+    "station_name": "经管6号充电桩",
+    "address": "电子科技大学清水河校区经济与管理学院",
+    "latitude": 30.75700846031503,
+    "longitude": 103.93097181320206,
+    "free_num": 3
+  },
+  {
+    "station_id": 172654,
+    "station_name": "经管5号充电桩",
+    "address": "电子科技大学清水河校区经济与管理学院",
+    "latitude": 30.75700846031503,
+    "longitude": 103.93097181320206,
+    "free_num": 5
+  },
+  {
+    "station_id": 172658,
+    "station_name": "经管4号充电桩",
+    "address": "电子科技大学清水河校区经济与管理学院",
+    "latitude": 30.75700846031503,
+    "longitude": 103.93097181320206,
+    "free_num": 4
+  },
+  {
+    "station_id": 54457,
+    "station_name": "电子科大清水河校区朝阳餐厅3号充电桩",
+    "address": "成都市郫都区朝阳餐厅",
+    "latitude": 30.755692056381214,
+    "longitude": 103.93388284789303,
+    "free_num": 5
+  },
+  {
+    "station_id": 58931,
+    "station_name": "电子科大清水河校区朝阳餐厅1号充电桩",
+    "address": "成都市郫都区朝阳餐厅",
+    "latitude": 30.755692056381214,
+    "longitude": 103.93388284789303,
+    "free_num": 6
+  },
+  {
+    "station_id": 74709,
+    "station_name": "电子科大清水河校区朝阳餐厅2号充电桩",
+    "address": "成都市郫都区朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 6
+  },
+  {
+    "station_id": 137020,
+    "station_name": "清水河朝阳餐厅3－1充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 5
+  },
+  {
+    "station_id": 137026,
+    "station_name": "清水河朝阳餐厅1－1充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 0
+  },
+  {
+    "station_id": 137034,
+    "station_name": "清水河朝阳餐厅6－1充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 2
+  },
+  {
+    "station_id": 137062,
+    "station_name": "清水河朝阳餐厅5－1充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 4
+  },
+  {
+    "station_id": 137084,
+    "station_name": "清水河朝阳餐厅2－1号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 4
+  },
+  {
+    "station_id": 137119,
+    "station_name": "清水河朝阳餐厅4－1充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-朝阳餐厅",
+    "latitude": 30.755929829801428,
+    "longitude": 103.93385999645717,
+    "free_num": 5
+  },
+  {
+    "station_id": 73844,
+    "station_name": "硕丰四组团3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-硕丰苑12",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 5
+  },
+  {
+    "station_id": 135601,
+    "station_name": "硕丰十组团7号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-硕丰苑",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 5
+  },
+  {
+    "station_id": 135638,
+    "station_name": "硕丰四组团1号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-硕丰苑12",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 4
+  },
+  {
+    "station_id": 135646,
+    "station_name": "硕丰十组团6号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-硕丰苑",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 8
+  },
+  {
+    "station_id": 137075,
+    "station_name": "硕丰四组团2号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区-硕丰苑12",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 3
+  },
+  {
+    "station_id": 172927,
+    "station_name": "硕丰十组团1号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-硕丰苑",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 4
+  },
+  {
+    "station_id": 172931,
+    "station_name": "硕丰十组团5号充电桩",
+    "address": "成都市郫都区电子科技大学(清水河校区)-硕丰苑",
+    "latitude": 30.755144676438317,
+    "longitude": 103.93501293319417,
+    "free_num": 6
+  },
+  {
+    "station_id": 172973,
+    "station_name": "硕丰十组团3号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区硕丰十组团",
+    "latitude": 30.753744229838407,
+    "longitude": 103.93788903037905,
+    "free_num": 4
+  },
+  {
+    "station_id": 172979,
+    "station_name": "硕丰十组团2号充电桩",
+    "address": "成都市郫都区电子科技大学清水河校区硕丰十组团",
+    "latitude": 30.753744229838407,
+    "longitude": 103.93788903037905,
+    "free_num": 2
+  },
+  {
+    "station_id": 172664,
+    "station_name": "光电所1号充电桩",
+    "address": "电子科技大学(清水河校区)光电楼",
+    "latitude": 30.759156289098936,
+    "longitude": 103.93349544838738,
+    "free_num": 2
+  },
+  {
+    "station_id": 172668,
+    "station_name": "光电所2号充电桩",
+    "address": "电子科技大学(清水河校区)光电楼",
+    "latitude": 30.759156289098936,
+    "longitude": 103.93349544838738,
+    "free_num": 2
+  },
+  {
+    "station_id": 252117,
+    "station_name": "集成电路与系统工程系5号充电桩",
+    "address": "电子科技大学(清水河校区)集成电路与系统系",
+    "latitude": 30.758300901281345,
+    "longitude": 103.93698198356907,
+    "free_num": 0
+  },
+  {
+    "station_id": 252479,
+    "station_name": "集成电路与系统系1号充电桩",
+    "address": "电子科技大学(清水河校区)集成电路与系统系",
+    "latitude": 30.758300901281345,
+    "longitude": 103.93698198356907,
+    "free_num": 0
+  },
+  {
+    "station_id": 252484,
+    "station_name": "集成电路与系统工程系4换充电桩",
+    "address": "电子科技大学(清水河校区)集成电路与系统系",
+    "latitude": 30.758300901281345,
+    "longitude": 103.93698198356907,
+    "free_num": 0
+  },
+  {
+    "station_id": 252486,
+    "station_name": "集成电路与系统系3号充电桩",
+    "address": "电子科技大学(清水河校区)集成电路与系统系",
+    "latitude": 30.758300901281345,
+    "longitude": 103.93698198356907,
+    "free_num": 0
+  },
+  {
+    "station_id": 231328,
+    "station_name": "电子科大清水河校区学子餐厅辅路3号电站",
+    "address": "学子餐厅(电子科技大学清水河校区店)",
+    "latitude": 30.758928588309267,
+    "longitude": 103.94090137343801,
+    "free_num": 6
+  },
+  {
+    "station_id": 94287,
+    "station_name": "清水河学知苑1号充电桩",
+    "address": "电子科技大学(清水河校区)学知苑",
+    "latitude": 30.76113153877712,
+    "longitude": 103.9386001038571,
+    "free_num": 6
+  },
+  {
+    "station_id": 181277,
+    "station_name": "清水河校区学知苑4号充电桩",
+    "address": "电子科技大学(清水河校区)学知苑",
+    "latitude": 30.76113153877712,
+    "longitude": 103.9386001038571,
+    "free_num": 7
+  },
+  {
+    "station_id": 231232,
+    "station_name": "清水河学知苑3号充电桩",
+    "address": "电子科技大学(清水河校区)学知苑",
+    "latitude": 30.76113153877712,
+    "longitude": 103.9386001038571,
+    "free_num": 8
+  },
+  {
+    "station_id": 231302,
+    "station_name": "清水河学知苑2号充电桩",
+    "address": "电子科技大学(清水河校区)学知苑",
+    "latitude": 30.76113153877712,
+    "longitude": 103.9386001038571,
+    "free_num": 5
+  },
+  {
+    "station_id": 164998,
+    "station_name": "清水河商业街18号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 0
+  },
+  {
+    "station_id": 165000,
+    "station_name": "清水河商业街商业街19号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 1
+  },
+  {
+    "station_id": 165008,
+    "station_name": "清水河商业街17号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 3
+  },
+  {
+    "station_id": 172650,
+    "station_name": "清水河商业街16号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 4
+  },
+  {
+    "station_id": 252339,
+    "station_name": "清水河商业街新增14号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 5
+  },
+  {
+    "station_id": 252348,
+    "station_name": "清水河商业街12号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 2
+  },
+  {
+    "station_id": 252403,
+    "station_name": "清水河商业街11号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 4
+  },
+  {
+    "station_id": 252437,
+    "station_name": "清水河商业街10号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 5
+  },
+  {
+    "station_id": 252463,
+    "station_name": "清水河商业街15号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 3
+  },
+  {
+    "station_id": 252755,
+    "station_name": "清水河商业街13号充电桩",
+    "address": "电子科技大学(清水河校区)商业街",
+    "latitude": 30.763105090827406,
+    "longitude": 103.93621743519624,
+    "free_num": 5
+  },
+  {
+    "station_id": 252411,
+    "station_name": "硕丰七组团2号充电桩",
+    "address": "电子科技大学硕丰七组团-25号楼",
+    "latitude": 30.763824198576113,
+    "longitude": 103.93816750109002,
+    "free_num": 5
+  },
+  {
+    "station_id": 252470,
+    "station_name": "硕丰七组团1号充电桩",
+    "address": "电子科技大学硕丰七组团-25号楼",
+    "latitude": 30.763824198576113,
+    "longitude": 103.93816750109002,
+    "free_num": 6
+  },
+  {
+    "station_id": 354983,
+    "station_name": "成都医学城二期3号",
+    "address": "成都医学城三医创新中心二期",
+    "latitude": 30.724168942888145,
+    "longitude": 103.91094240331704,
+    "free_num": 1
+  },
+  {
+    "station_id": 355155,
+    "station_name": "成都医学城二期2号",
+    "address": "三医创新中心二期智慧医疗产业园",
+    "latitude": 30.724168942888145,
+    "longitude": 103.91094240331704,
+    "free_num": 8
+  },
+  {
+    "station_id": 355179,
+    "station_name": "成都医学城二期1号",
+    "address": "三医创新中心二期智慧医疗产业园",
+    "latitude": 30.724168942888145,
+    "longitude": 103.91094240331704,
+    "free_num": 9
+  },
+  {
+    "station_id": 354987,
+    "station_name": "博奥产业园2号",
+    "address": "成都博奥晶芯生物科技有限公司",
+    "latitude": 30.724522269134336,
+    "longitude": 103.90818915913864,
+    "free_num": 8
+  },
+  {
+    "station_id": 354989,
+    "station_name": "博奥产业园3号",
+    "address": "成都博奥晶芯生物科技有限公司",
+    "latitude": 30.724522269134336,
+    "longitude": 103.90818915913864,
+    "free_num": 10
+  },
+  {
+    "station_id": 355021,
+    "station_name": "成都医学城一期2号",
+    "address": "成都医学城三医创新中心1期",
+    "latitude": 30.722093343403827,
+    "longitude": 103.90868891395735,
+    "free_num": 10
+  },
+  {
+    "station_id": 355156,
+    "station_name": "成都医学成一期1号",
+    "address": "成都医学城三医创新中心1期",
+    "latitude": 30.722093343403827,
+    "longitude": 103.90868891395735,
+    "free_num": 9
+  }
+]

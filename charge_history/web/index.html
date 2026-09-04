@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12161c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>充电桩监控</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<style>
+  :root {
+    --bg-top: #070a0e;
+    --bg-bottom: #12161c;
+    --card: #181818;
+    --card-hi: #212327;
+    --border: rgba(255, 255, 255, .12);
+    --text: #f6f6f8;
+    --muted: #8999ac;
+    --green: #30d158;
+    --red: #ff453a;
+    --yellow: #ffd60a;
+    --blue: #0a84ff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
+    color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+    font-size: 15px; line-height: 1.45;
+    min-height: 100vh;
+  }
+  body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 12px; }
+
+  /* 顶栏 */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    padding: 12px 0 8px;
+    background: linear-gradient(180deg, rgba(7,10,14,.96), rgba(7,10,14,.82));
+    backdrop-filter: saturate(180%) blur(10px);
+  }
+  .top { display: flex; align-items: center; gap: 10px; }
+  .back {
+    display: none; width: 34px; height: 34px; flex: 0 0 auto;
+    border-radius: 50%; border: 1px solid var(--border);
+    background: var(--card-hi); color: var(--text);
+    font-size: 18px; cursor: pointer; line-height: 1;
+  }
+  h1 { margin: 0; font-size: 18px; font-weight: 600; flex: 1 1 auto; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); margin-right: 6px; vertical-align: middle; }
+  .dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  .toolbar { display: flex; gap: 8px; margin-top: 8px; }
+  .search {
+    flex: 1 1 auto; padding: 9px 12px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--card-hi);
+    color: var(--text); font-size: 14px; outline: none;
+  }
+  .search::placeholder { color: var(--muted); }
+  .btn {
+    padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card-hi); color: var(--text); font-size: 13px; cursor: pointer;
+    flex: 0 0 auto; white-space: nowrap;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn.primary { background: var(--blue); border-color: transparent; font-weight: 600; }
+  .btn.on { background: var(--green); color: #062; border-color: transparent; }
+
+  /* 汇总条 */
+  .stats { display: flex; gap: 8px; margin: 10px 0; }
+  .stat {
+    flex: 1 1 0; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px; text-align: center;
+  }
+  .stat .n { font-size: 20px; font-weight: 700; }
+  .stat .l { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .stat.free .n { color: var(--green); }
+  .stat.busy .n { color: var(--yellow); }
+  .stat.broken .n { color: var(--red); }
+
+  /* 卡片列表 */
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px; cursor: pointer;
+    transition: background .12s;
+  }
+  .card:active { background: var(--card-hi); }
+  .card .row1 { display: flex; align-items: center; gap: 8px; }
+  .card .name { flex: 1 1 auto; font-weight: 600; font-size: 15px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+  .badge.free { color: var(--green); border-color: rgba(48,209,88,.5); }
+  .badge.busy { color: var(--yellow); border-color: rgba(255,214,10,.5); }
+  .badge.broken { color: var(--red); border-color: rgba(255,69,58,.5); }
+
+  /* 插座网格 */
+  .outlet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .outlet {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--card); padding: 10px 8px; text-align: center; cursor: pointer;
+  }
+  .outlet:active { background: var(--card-hi); }
+  .outlet .no { font-size: 17px; font-weight: 700; }
+  .outlet .st { font-size: 12px; margin-top: 3px; }
+  .outlet.free .no { color: var(--green); }
+  .outlet.busy .no { color: var(--yellow); }
+  .outlet.broken .no { color: var(--red); }
+  .outlet .meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* 会话卡片 */
+  .sess .tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tag { font-size: 12px; color: var(--muted); background: var(--card-hi);
+    border-radius: 6px; padding: 2px 7px; }
+  .tag.warn { color: var(--red); }
+  .tag.live { color: var(--green); }
+
+  /* 详情 */
+  .detail .big { font-size: 24px; font-weight: 700; }
+  .kv { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+  .kv .cell { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+  .kv .cell .k { font-size: 12px; color: var(--muted); }
+  .kv .cell .v { font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .chart { margin-top: 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 0; }
+  .muted { color: var(--muted); }
+  .seg { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+    background: rgba(30,32,36,.95); color: var(--text); padding: 10px 16px;
+    border-radius: 10px; border: 1px solid var(--border); font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 99;
+  }
+  .toast.show { opacity: 1; }
+
+  /* 列表/地图 分段切换 */
+  .seg { display: flex; gap: 2px; background: var(--card-hi); border: 1px solid var(--border);
+    border-radius: 10px; padding: 2px; flex: 0 0 auto; }
+  .seg-btn { border: 0; background: transparent; color: var(--muted); font-size: 13px;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+  .seg-btn.on { background: var(--blue); color: #fff; font-weight: 600; }
+
+  /* 列表快速筛选 */
+  .filter { display: flex; gap: 6px; margin: 8px 0; }
+  .fbtn { border: 1px solid var(--border); background: var(--card-hi); color: var(--muted);
+    padding: 8px 0; border-radius: 999px; font-size: 13px; cursor: pointer; flex: 1 1 0; }
+  .fbtn.on { background: var(--blue); color: #fff; border-color: transparent; font-weight: 600; }
+  .fbtn.free.on { background: var(--green); color: #043; }
+  .fbtn.busy.on { background: var(--yellow); color: #432; }
+
+  /* 地图 */
+  #view-map { position: relative; }
+  .map-note { font-size: 12px; color: var(--muted); margin: 8px 0 6px; }
+  #mapDiv { height: calc(100vh - 210px); min-height: 300px; border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden; background: #0b0e13; }
+  #mapDiv .leaflet-popup-content { color: #111; }
+  #mapDiv .leaflet-popup-content-wrapper { border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <button class="back" id="backBtn" onclick="goBack()">‹</button>
+      <h1><span class="dot" id="healthDot"></span>充电桩监控</h1>
+      <div class="seg">
+        <button class="seg-btn on" id="listTab" onclick="setMode('list')">列表</button>
+        <button class="seg-btn" id="mapTab" onclick="setMode('map')">地图</button>
+      </div>
+      <button class="btn" id="refreshBtn" onclick="refresh()">刷新</button>
+    </div>
+    <div class="toolbar" id="listToolbar">
+      <input class="search" id="searchInput" placeholder="搜索站点…" oninput="onSearch(this.value)">
+      <button class="btn" id="autoBtn" onclick="toggleAuto()">自动:关</button>
+    </div>
+  </header>
+
+  <!-- 站点列表 -->
+  <section id="view-stations">
+    <div class="stats" id="statsBar"></div>
+    <div class="filter" id="stationFilter">
+      <button class="fbtn on" data-f="all" onclick="setStationFilter('all')">全部</button>
+      <button class="fbtn free" data-f="free" onclick="setStationFilter('free')">空闲</button>
+      <button class="fbtn busy" data-f="busy" onclick="setStationFilter('busy')">充电中</button>
+    </div>
+    <div class="list" id="stationList"></div>
+  </section>
+
+  <!-- 插座列表 -->
+  <section id="view-outlets" style="display:none">
+    <div class="seg" id="outletTitle"></div>
+    <div class="stats" id="outletStats"></div>
+    <div class="outlet-grid" id="outletGrid"></div>
+  </section>
+
+  <!-- 会话列表 -->
+  <section id="view-sessions" style="display:none">
+    <div class="seg" id="sessionTitle"></div>
+    <div class="list" id="sessionList"></div>
+  </section>
+
+  <!-- 会话详情 -->
+  <section id="view-detail" style="display:none">
+    <div class="detail" id="detailBody"></div>
+  </section>
+
+  <!-- 地图 -->
+  <section id="view-map" style="display:none">
+    <div class="map-note" id="mapNote">正在加载地图…</div>
+    <div id="mapDiv"></div>
+  </section>
+
+  <div class="empty" id="emptyHint" style="display:none">暂无数据</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+"use strict";
+
+/* ---------- 状态 ---------- */
+const S = {
+  stations: [],
+  outlets: [],
+  sessions: [],
+  currentStation: null,
+  currentOutlet: null,
+  currentSession: null,
+  locationById: {},
+  stationFilter: "all",
+  stack: [],
+  auto: false,
+  timer: null,
+  health: null,
+};
+
+/* ---------- 地图配置 ---------- */
+const MAP = {
+  center: [30.746, 103.922],   // 校园中心（标记加载后会自动 fitBounds）
+  zoom: 16,
+  // 高德中文路网瓦片：GCJ-02 原生，接口坐标也是 GCJ-02，直接使用、无需转换。
+  // 若需回退 OpenStreetMap：tileUrl 改 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"，
+  //   subdomains: ["a","b","c"]，gcjToWgs: true（OSM 是 WGS-84，此时要转换）。
+  tileUrl: "https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+  subdomains: ["1", "2", "3", "4"],
+  attribution: "© 高德地图",
+  gcjToWgs: false,
+};
+let MODE = "list";
+let leafletMap = null;
+let markers = {};
+
+const $ = id => document.getElementById(id);
+const STATUS_OUTLET = {1:"空闲", 2:"充电中", 3:"故障"};
+const CLS_OUTLET = {1:"free", 2:"busy", 3:"broken"};
+
+/* ---------- 工具 ---------- */
+async function api(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  if (j && j.ok !== true) throw new Error(j.error || "接口返回异常");
+  return j.data;
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+    {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]
+  ));
+}
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function fmtTime(v) {
+  if (!v) return "-";
+  const d = new Date(v);
+  if (isNaN(d)) return "-";
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function fmtMoney(v) { return v == null ? "-" : "¥" + Number(v).toFixed(2); }
+function fmtDur(v) {
+  if (v == null) return "-";
+  const m = Math.max(0, Math.round(v));
+  const h = Math.floor(m / 60), mm = m % 60;
+  return h ? `${h}h ${String(mm).padStart(2,"0")}m` : `${m} min`;
+}
+function fmtPower(v) { return v == null ? "-" : v + " W"; }
+
+/* ---------- 视图切换 ---------- */
+const VIEWS = ["view-stations", "view-outlets", "view-sessions", "view-detail", "view-map"];
+function showView(name, push) {
+  VIEWS.forEach(v => $(v).style.display = v === name ? "block" : "none");
+  $("searchInput").style.display = name === "view-stations" ? "block" : "none";
+  $("backBtn").style.display = push ? "inline-block" : "none";
+  $("emptyHint").style.display = "none";
+  window.scrollTo(0, 0);
+}
+function goBack() {
+  const prev = S.stack.pop();
+  if (prev) showView(prev.view, S.stack.length > 0);
+  else showView("view-stations", false);
+}
+function nav(view, pushFn) {
+  S.stack.push({ view: currentView() });
+  showView(view, true);
+  if (pushFn) pushFn();
+}
+function currentView() {
+  return VIEWS.find(v => $(v).style.display !== "none") || "view-stations";
+}
+
+function setMode(m) {
+  MODE = m;
+  $("listTab").classList.toggle("on", m === "list");
+  $("mapTab").classList.toggle("on", m === "map");
+  $("listToolbar").style.display = m === "list" ? "flex" : "none";
+  if (m === "map") {
+    showView("view-map", false);
+    loadMap();
+    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 60);
+  } else {
+    showView("view-stations", false);
+    S.stack = [];
+    loadStations();
+  }
+}
+
+/* ---------- 健康检查 ---------- */
+async function checkHealth() {
+  try {
+    const h = await api("/api/health");
+    S.health = h;
+    const ok = h.collector && h.collector.is_collecting;
+    $("healthDot").className = "dot " + (ok ? "ok" : "err");
+    return true;
+  } catch (e) {
+    $("healthDot").className = "dot err";
+    return false;
+  }
+}
+
+/* ---------- 站点 ---------- */
+async function loadStations() {
+  const q = $("searchInput").value.trim();
+  const list = await api("/api/stations" + (q ? "?search=" + encodeURIComponent(q) : ""));
+  S.stations = list;
+  renderStats(list, S.health ? S.health.totals : null);
+  applyStationFilter();
+}
+
+function stationPasses(s, f) {
+  const total = s.outlet_count || 0;
+  const free = Math.max(0, total - (s.busy_count||0) - (s.broken_count||0));
+  if (f === "free") return free > 0;          // 该站还有空闲插座
+  if (f === "busy") return (s.busy_count||0) > 0;  // 该站有在充电的
+  return true;
+}
+
+function applyStationFilter() {
+  const f = S.stationFilter;
+  const shown = S.stations.filter(s => stationPasses(s, f));
+  renderStations(shown);
+}
+
+function setStationFilter(f) {
+  S.stationFilter = f;
+  document.querySelectorAll("#stationFilter .fbtn").forEach(b =>
+    b.classList.toggle("on", b.dataset.f === f));
+  applyStationFilter();
+}
+
+function renderStats(stations, totals) {
+  let free = 0, busy = 0, broken = 0;
+  stations.forEach(s => {
+    const total = s.outlet_count || 0;
+    busy += s.busy_count || 0;
+    broken += s.broken_count || 0;
+    free += Math.max(0, total - (s.busy_count||0) - (s.broken_count||0));
+  });
+  const html = `
+    <div class="stat free"><div class="n">${free}</div><div class="l">空闲</div></div>
+    <div class="stat busy"><div class="n">${busy}</div><div class="l">充电中</div></div>
+    <div class="stat broken"><div class="n">${broken}</div><div class="l">故障</div></div>
+  `;
+  $("statsBar").innerHTML = html;
+}
+
+function renderStations(list) {
+  const box = $("stationList");
+  if (!list.length) { box.innerHTML = '<div class="empty">没有匹配的站点</div>'; return; }
+  box.innerHTML = list.map(s => {
+    const total = s.outlet_count || 0;
+    const free = Math.max(0, total - (s.busy_count||0) - (s.broken_count||0));
+    return `
+      <div class="card" onclick="openOutlets(${s.station_id}, ${esc(JSON.stringify(s.station_name))})">
+        <div class="row1">
+          <div class="name">${esc(s.station_name)}</div>
+          ${free ? `<span class="badge free">空闲 ${free}</span>` : ""}
+        </div>
+        <div class="sub">共 ${total} 插座 · 充电中 ${s.busy_count||0} · 故障 ${s.broken_count||0}</div>
+      </div>`;
+  }).join("");
+}
+
+/* ---------- 插座 ---------- */
+async function openOutlets(sid, name) {
+  S.currentStation = { id: sid, name };
+  $("outletTitle").textContent = name;
+  nav("view-outlets", loadOutlets);
+}
+async function loadOutlets() {
+  const s = S.currentStation;
+  try {
+    const list = await api("/api/outlets?station_id=" + s.id);
+    S.outlets = list;
+    let free = 0, busy = 0, broken = 0;
+    list.forEach(o => {
+      if (o.status === 1) free++; else if (o.status === 2) busy++; else broken++;
+    });
+    $("outletStats").innerHTML = `
+      <div class="stat free"><div class="n">${free}</div><div class="l">空闲</div></div>
+      <div class="stat busy"><div class="n">${busy}</div><div class="l">充电中</div></div>
+      <div class="stat broken"><div class="n">${broken}</div><div class="l">故障</div></div>`;
+    $("outletGrid").innerHTML = list.map(o => {
+      const cls = CLS_OUTLET[o.status] || "broken";
+      let meta = "";
+      if (o.status === 2) {
+        meta = `<div class="meta">${fmtPower(o.current_power_w)}</div>
+                <div class="meta">${fmtMoney(o.current_fee)}</div>`;
+      } else if (o.status === 1) {
+        meta = `<div class="meta">可用</div>`;
+      }
+      return `
+        <div class="outlet ${cls}" onclick="openSessions(${o.station_id}, '${esc(o.outlet_no)}', ${o.serial})">
+          <div class="no">${o.serial}</div>
+          <div class="st">${STATUS_OUTLET[o.status] || "未知"}</div>
+          ${meta}
+        </div>`;
+    }).join("");
+  } catch (e) { toast("插座加载失败: " + e.message); }
+}
+
+/* ---------- 会话 ---------- */
+async function openSessions(sid, outletNo, serial) {
+  S.currentOutlet = { station_id: sid, outlet_no: outletNo, serial };
+  $("sessionTitle").textContent = `${S.currentStation.name} · ${serial}号插座`;
+  nav("view-sessions", loadSessions);
+}
+async function loadSessions() {
+  const o = S.currentOutlet;
+  try {
+    const list = await api(`/api/sessions?station_id=${o.station_id}&outlet_no=${encodeURIComponent(o.outlet_no)}&days=3`);
+    S.sessions = list;
+    $("sessionList").innerHTML = list.map(s => {
+      const live = s.is_in_progress;
+      const abnormal = s.abnormal && !live;
+      return `
+        <div class="card sess" onclick="openDetail(${s.id})">
+          <div class="row1">
+            <div class="name">${live ? "正在充电" : esc(s.status_text)}</div>
+            ${live ? '<span class="badge busy">进行中</span>' : (abnormal ? '<span class="badge broken">异常</span>' : '<span class="badge free">正常</span>')}
+          </div>
+          <div class="sub">${fmtTime(s.start_time)} → ${live ? "至今" : fmtTime(s.end_time)}</div>
+          <div class="tags">
+            <span class="tag">${fmtDur(s.duration_min)}</span>
+            <span class="tag">${fmtMoney(s.final_fee)}</span>
+            <span class="tag">均功 ${fmtPower(s.avg_power_w)}</span>
+            ${abnormal ? '<span class="tag warn">异常结束</span>' : ""}
+          </div>
+        </div>`;
+    }).join("");
+    if (!list.length) $("sessionList").innerHTML = '<div class="empty">近 3 天无充电记录</div>';
+  } catch (e) { toast("会话加载失败: " + e.message); }
+}
+
+/* ---------- 会话详情 ---------- */
+async function openDetail(sessionId) {
+  S.currentSession = sessionId;
+  nav("view-detail", loadDetail);
+}
+async function loadDetail() {
+  try {
+    const d = await api("/api/session?session_id=" + S.currentSession);
+    const live = d.is_in_progress;
+    const abnormal = d.abnormal && !live;
+    const points = d.points || [];
+    $("detailBody").innerHTML = `
+      <div class="big" style="color:${live ? "var(--green)" : (abnormal ? "var(--red)" : "var(--text)")}">
+        ${live ? "正在充电" : esc(d.status_text)}
+      </div>
+      <div class="sub muted">${S.currentStation.name} · ${d.serial}号插座 · 插座 ${esc(d.outlet_no)}</div>
+      <div class="kv">
+        <div class="cell"><div class="k">开始时间</div><div class="v">${fmtTime(d.start_time)}</div></div>
+        <div class="cell"><div class="k">结束时间</div><div class="v">${live ? "进行中" : fmtTime(d.end_time)}</div></div>
+        <div class="cell"><div class="k">时长</div><div class="v">${fmtDur(d.duration_min)}</div></div>
+        <div class="cell"><div class="k">费用</div><div class="v">${fmtMoney(d.final_fee)}</div></div>
+        <div class="cell"><div class="k">平均功率</div><div class="v">${fmtPower(d.avg_power_w)}</div></div>
+        <div class="cell"><div class="k">最大功率</div><div class="v">${fmtPower(d.max_power_w)}</div></div>
+        <div class="cell"><div class="k">采样点数</div><div class="v">${d.sample_count || 0}</div></div>
+        <div class="cell"><div class="k">基准功率</div><div class="v">${fmtPower(d.baseline_power_w)}</div></div>
+      </div>
+      ${points.length >= 2 ? `<div class="chart">${powerChart(points)}</div>` : ""}
+    `;
+  } catch (e) { toast("详情加载失败: " + e.message); }
+}
+
+function powerChart(points) {
+  const W = 480, H = 180, P = 8;
+  const xs = points.map(p => new Date(p.sample_time).getTime());
+  const ys = points.map(p => p.power_w == null ? null : Number(p.power_w));
+  const validY = ys.filter(v => v != null);
+  if (!validY.length) return "";
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMax = Math.max(...validY) * 1.15 || 1;
+  const x = t => P + (xMax === xMin ? 0 : (t - xMin) / (xMax - xMin) * (W - 2*P));
+  const y = v => H - P - (v / yMax) * (H - 2*P);
+  let path = "", area = "";
+  points.forEach((p, i) => {
+    if (ys[i] == null) return;
+    const px = x(xs[i]), py = y(ys[i]);
+    path += (path ? "L" : "M") + px.toFixed(1) + " " + py.toFixed(1) + " ";
+    area += (area ? "L" : "M") + px.toFixed(1) + " " + py.toFixed(1) + " ";
+  });
+  // 闭合面积区域
+  const firstX = x(xs[0]), lastX = x(xs[xs.length-1]);
+  area += `L${lastX.toFixed(1)} ${H-P} L${firstX.toFixed(1)} ${H-P} Z`;
+  const t0 = fmtTime(points[0].sample_time).slice(5, 16);
+  const t1 = fmtTime(points[points.length-1].sample_time).slice(5, 16);
+  return `
+    <div class="muted" style="font-size:12px;margin-bottom:4px">功率曲线 · ${t0} ~ ${t1}</div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:140px">
+      <defs>
+        <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0a84ff" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#0a84ff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#pg)"/>
+      <path d="${path}" fill="none" stroke="#0a84ff" stroke-width="2" stroke-linejoin="round"/>
+    </svg>`;
+}
+
+/* ---------- 地图 ---------- */
+const PI2 = Math.PI;
+function _outOfChina(lng, lat) {
+  return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+}
+function _transLat(x, y) {
+  let r = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*PI2) + 20*Math.sin(2*x*PI2)) * 2/3;
+  r += (20*Math.sin(y*PI2) + 40*Math.sin(y/3*PI2)) * 2/3;
+  r += (160*Math.sin(y/12*PI2) + 320*Math.sin(y*PI2/30)) * 2/3;
+  return r;
+}
+function _transLng(x, y) {
+  let r = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*PI2) + 20*Math.sin(2*x*PI2)) * 2/3;
+  r += (20*Math.sin(x*PI2) + 40*Math.sin(x/3*PI2)) * 2/3;
+  r += (150*Math.sin(x/12*PI2) + 300*Math.sin(x/30*PI2)) * 2/3;
+  return r;
+}
+function _gcjDelta(lng, lat) {
+  const a = 6378245.0, ee = 0.00669342162296594323;
+  let dLat = _transLat(lng-105, lat-35);
+  let dLng = _transLng(lng-105, lat-35);
+  const radLat = lat/180*PI2;
+  let magic = Math.sin(radLat);
+  magic = 1 - ee*magic*magic;
+  const sqrtMagic = Math.sqrt(magic);
+  dLat = (dLat*180)/((a*(1-ee))/(magic*sqrtMagic)*PI2);
+  dLng = (dLng*180)/(a/sqrtMagic*Math.cos(radLat)*PI2);
+  return [dLng, dLat];
+}
+function gcj02ToWgs84(lng, lat) {
+  if (_outOfChina(lng, lat)) return [lng, lat];
+  let d = _gcjDelta(lng, lat);
+  let wl = lng - d[0], wla = lat - d[1];
+  let d2 = _gcjDelta(wl, wla);
+  return [lng - d2[0], lat - d2[1]];
+}
+
+function buildMap() {
+  if (leafletMap) return;
+  leafletMap = L.map("mapDiv", { zoomControl: true }).setView(MAP.center, MAP.zoom);
+  L.tileLayer(MAP.tileUrl, {
+    attribution: MAP.attribution,
+    maxZoom: 18,
+    subdomains: MAP.subdomains,
+  }).addTo(leafletMap);
+}
+
+function cMarker(free) {
+  const color = free == null ? "#8999ac" : (free > 0 ? "#30d158" : "#ff453a");
+  return `<div style="width:26px;height:26px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#043;font-weight:700;font-size:12px;box-shadow:0 1px 5px rgba(0,0,0,.55)">${free==null?"?":free}</div>`;
+}
+
+function popupHtml(loc, s) {
+  const free = s ? (s.outlet_count - (s.busy_count||0) - (s.broken_count||0)) : null;
+  const stat = s ? `${free} 空闲 · ${s.busy_count||0} 充电中 · ${s.broken_count||0} 故障` : "暂无实时数据";
+  return `<div style="min-width:170px">
+    <div style="font-weight:600;font-size:14px">${esc(loc.station_name)}</div>
+    <div style="color:#666;font-size:12px;margin-top:4px">${esc(loc.address||"(无地址)")}</div>
+    <div style="margin:6px 0;font-size:13px">${stat}</div>
+    <button class="btn" style="width:100%" onclick="gotoStationFromMap(${loc.station_id})">查看插座</button>
+  </div>`;
+}
+
+async function loadMap() {
+  try {
+    const locs = await api("/api/locations");
+    const stations = await api("/api/stations");
+    buildMap();
+    const status = {};
+    stations.forEach(s => status[s.station_id] = s);
+    S.locationById = {};
+    Object.values(markers).forEach(md => leafletMap.removeLayer(md));
+    markers = {};
+    let placed = 0;
+    const locIds = new Set();
+    locs.forEach(loc => {
+      if (loc.latitude == null || loc.longitude == null) return;
+      let lng = loc.longitude, lat = loc.latitude;
+      if (MAP.gcjToWgs) { const w = gcj02ToWgs84(lng, lat); lng = w[0]; lat = w[1]; }
+      const s = status[loc.station_id];
+      const free = s ? (s.outlet_count - (s.busy_count||0) - (s.broken_count||0)) : null;
+      const icon = L.divIcon({ className: "", html: cMarker(free), iconSize: [28,28], iconAnchor: [14,14] });
+      const m = L.marker([lat, lng], { icon }).addTo(leafletMap);
+      m.bindPopup(popupHtml(loc, s));
+      markers[loc.station_id] = m;
+      S.locationById[loc.station_id] = loc;
+      locIds.add(loc.station_id);
+      placed++;
+    });
+    const pts = Object.values(markers).map(md => md.getLatLng());
+    if (pts.length) leafletMap.fitBounds(L.latLngBounds(pts).pad(0.12));
+    const noCoord = stations.filter(s => !locIds.has(s.station_id));
+    $("mapNote").innerHTML = `${placed} 个站点已定位` +
+      (noCoord.length ? ` · ${noCoord.length} 个待确认位置：${noCoord.map(s => esc(s.station_name)).join("、")}` : "");
+    if (!placed) $("mapNote").textContent = "暂无站点位置数据，请运行 export_locations.py 生成坐标表";
+  } catch (e) {
+    toast("地图加载失败: " + e.message);
+  }
+}
+
+function gotoStationFromMap(sid) {
+  const loc = S.locationById[sid];
+  const name = loc ? loc.station_name : ("站点" + sid);
+  setMode("list");
+  S.currentStation = { id: sid, name: name };
+  showView("view-outlets", true);
+  loadOutlets();
+}
+
+/* ---------- 刷新 / 自动 ---------- */
+async function refresh() {
+  const view = currentView();
+  await checkHealth();
+  try {
+    if (view === "view-stations") await loadStations();
+    else if (view === "view-outlets") await loadOutlets();
+    else if (view === "view-sessions") await loadSessions();
+    else if (view === "view-detail") await loadDetail();
+    else if (view === "view-map") await loadMap();
+  } catch (e) {
+    toast("刷新失败: " + e.message);
+  }
+}
+function toggleAuto() {
+  S.auto = !S.auto;
+  const b = $("autoBtn");
+  b.textContent = S.auto ? "自动:开" : "自动:关";
+  b.className = "btn" + (S.auto ? " on" : "");
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
+  if (S.auto) {
+    S.timer = setInterval(() => { const v = currentView(); if (v === "view-stations" || v === "view-outlets" || v === "view-map") refresh(); }, 30000);
+    toast("已开启 30 秒自动刷新");
+  }
+}
+function onSearch(q) {
+  clearTimeout(onSearch._h);
+  onSearch._h = setTimeout(loadStations, 250);
+}
+
+/* ---------- 启动 ---------- */
+(async function boot() {
+  const ok = await checkHealth();
+  if (!ok) toast("后端不可达，请确认服务已启动");
+  await loadStations();
+})();
+</script>
+</body>
+</html>
